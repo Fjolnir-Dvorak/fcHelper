@@ -36,41 +36,47 @@ type KeyValue struct {
 	Value string
 }
 
-var gameDir string
-var destination string
-var template bool
-var language string
+const (
+	handbook  = "64/Default/Handbook"
+	out       = "fc_out"
+	templates = "templates"
 
-const handbook = "64/Default/Handbook"
+	// Base structure and keywords for handbook
+	av     = "AvailableResearch"
+	av_key = "AV"
+	co     = "CompletedResearch"
+	co_key = "CO"
+	cr     = "Creative"
+	cr_key = "CR"
+	ma     = "Materials"
+	ma_key = "MA"
+	su     = "Survival"
+	su_key = "SU"
 
-const av = "AvailableResearch"
-const co = "CompletedResearch"
-const cr = "Creative"
-const ma = "Materials"
-const su = "Survival"
+	// Keywords to extract
+	title     = "Title"
+	header    = "Header"
+	paragraph = "Paragraph"
+	left      = "Left"
+	right     = "Right"
 
-const av_key = "AV"
-const co_key = "CO"
-const cr_key = "CR"
-const ma_key = "MA"
-const su_key = "SU"
+	// xml structure
+	optNode    = "Text"
+	contNode   = "Pages"
+	filePrefix = "handbook-"
 
-const title = "Title"
-const header = "Header"
-const paragraph = "Paragraph"
-const left = "Left"
-const right = "Right"
+	// Replacekey design
+	surround       = "{}"
+	surroundAmount = 2
+)
 
-var keywords = [...]string{title, header, paragraph, left, right}
-
-const surround = "{}"
-const surroundAmount = 2
-const out = "fc_out"
-const templates = "templates"
-
-const optNode = "Text"
-const contNode = "Pages"
-const filePrefix = "handbook-"
+var (
+	keywords    = [...]string{title, header, paragraph, left, right}
+	gameDir     string
+	destination string
+	template    bool
+	language    string
+)
 
 // extractCmd represents the extract command
 var extractCmd = &cobra.Command{
@@ -83,6 +89,25 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: doExtract,
+}
+
+func init() {
+	RootCmd.AddCommand(extractCmd)
+	extractCmd.Flags().StringVarP(&gameDir, "gameDir", "g", "", "Directory containing FortressCraft Evolved.")
+	extractCmd.Flags().StringVarP(&destination, "destination", "d", out, "Destination Directory to create the parsed files.")
+	extractCmd.Flags().StringVarP(&language, "language", "l", "", "Used language shortkey.")
+	extractCmd.Flags().BoolVarP(&template, "template", "t", false, "Wether to generate xml-templates.")
+
+	// Here you will define your flags and configuration settings.
+
+	// Cobra supports Persistent Flags which will work for this command
+	// and all subcommands, e.g.:
+	// extractCmd.PersistentFlags().String("foo", "", "A help for foo")
+
+	// Cobra supports local flags which will only run when this command
+	// is called directly, e.g.:
+	// extractCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+
 }
 
 func doExtract(cmd *cobra.Command, args []string) {
@@ -204,23 +229,4 @@ func surroundCode(code string) string {
 	surroundRight := strings.Repeat(string(surround[1]), surroundAmount)
 	surrounded := surroundLeft + code + surroundRight
 	return surrounded
-}
-
-func init() {
-	RootCmd.AddCommand(extractCmd)
-	extractCmd.Flags().StringVarP(&gameDir, "gameDir", "g", "", "Directory containing FortressCraft Evolved.")
-	extractCmd.Flags().StringVarP(&destination, "destination", "d", out, "Destination Directory to create the parsed files.")
-	extractCmd.Flags().StringVarP(&language, "language", "l", "", "Used language shortkey.")
-	extractCmd.Flags().BoolVarP(&template, "template", "t", false, "Wether to generate xml-templates.")
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// extractCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// extractCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-
 }
