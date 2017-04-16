@@ -76,13 +76,19 @@ func doRepair(cmd *cobra.Command, args []string) {
 	files, _ := ioutil.ReadDir(srcItems)
 	keylist := datatypes.InitEmptyKeyNameList()
 	for _, file := range files {
+		baseFile := filepath.Join(srcItems, file.Name())
+		fmt.Printf("Reading dictionary file: %s\n", baseFile)
 		switch file.Name() {
 		case forgecraft.ItemsFilename:
-			itemsParsed, _ := forgecraft.ParseItemsXMLFile(srcItems)
-			keylist.Merge(itemsParsed.CreateKeyMap())
+			items := forgecraft.ParseItemsXMLFile(baseFile)
+			keylist.Merge(items.CreateKeyMap())
+			break
+		case forgecraft.TerrainDataFilename:
+			items := forgecraft.ParseTerrainDataXMLFile(baseFile)
+			keylist.Merge(items.CreateKeyMap())
 			break
 		default:
-			fmt.Printf("!!! NOT SUPPORTED FILETYPE: %s", file.Name())
+			fmt.Printf("!!! NOT SUPPORTED FILETYPE: %s", baseFile)
 		}
 	}
 
@@ -110,17 +116,19 @@ func readDir(directory string, keylist datatypes.KeyNameList) {
 		root := doc.Root()
 		var name, key string
 		for _, child := range root.ChildElements() {
-			if child.Tag == Key {
+			if child.Tag == Name {
 				name = child.Text()
 				key = keylist.GetKey(name)
 				if key == "" {
 					fmt.Printf("Key not Found for name: %s ||| File: %s\n", name, basefile)
 					continue
 				}
-				child.Tag = key
-				child.SetText(Name)
+				//fmt.Printf("Key {{%s}} Found for name: %s ||| File: %s\n", key, name, basefile)
+				child.Tag = Key
+				child.SetText(key)
 				_ = doc.WriteToFile(basefile)
 				os.Rename(basefile, filepath.Join(directory, key+".xml"))
+				//os.Rename(basefile, filepath.Join(directory, "_"+key+"_"+fileInf.Name()))
 				break
 			}
 		}

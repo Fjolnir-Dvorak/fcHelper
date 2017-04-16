@@ -1,12 +1,12 @@
 package forgecraft
 
 import (
-	"fmt"
 	"github.com/Fjolnir-Dvorak/fcHelper/datatypes"
 	"github.com/beevik/etree"
 )
 
-type ItemEntries struct {
+type Items struct {
+	Doc     *etree.Document
 	Entries []ItemEntry
 }
 
@@ -65,7 +65,7 @@ var (
 		DecomposeValue:  "DecomposeValue",
 	}
 	ItemsFilename = "Items.xml"
-	Parent = "Entries"
+	ItemsParent   = "ItemEntry"
 )
 
 func parseItem(element *etree.Element) ItemEntry {
@@ -119,38 +119,29 @@ func parseItem(element *etree.Element) ItemEntry {
 			item.DecomposeValue = child.Text()
 			break
 		default:
-			fmt.Println(child.Tag)
+			utilHandleUnknownElement(child.Tag)
 		}
 	}
 	return item
 }
 
-func getChildText(element *etree.Element) []string {
-	children := element.ChildElements()
-	strings := make([]string, len(children))
-	for index, child := range children {
-		strings[index] = child.Text()
-	}
-	return strings
-}
-
-func ParseItemsXML(root *etree.Element) ItemEntries {
+func parseItemsXML(root *etree.Element) []ItemEntry {
 	children := root.ChildElements()
 	items := make([]ItemEntry, len(children))
 	for index, child := range children {
 		items[index] = parseItem(child)
 	}
-	return ItemEntries{items}
+	return items
 }
 
-func ParseItemsXMLFile(filename string) (ItemEntries, *etree.Document) {
+func ParseItemsXMLFile(filename string) Items {
 	doc := etree.NewDocument()
 	doc.ReadFromFile(filename)
-	root := doc.Root()
-	return ParseItemsXML(root), doc
+	items := Items{Entries: parseItemsXML(doc.Root()), Doc: doc}
+	return items
 }
 
-func (items *ItemEntries) CreateKeyMap() datatypes.KeyNameList {
+func (items *Items) CreateKeyMap() datatypes.KeyNameList {
 
 	keyNames := make([]datatypes.KeyName, len(items.Entries))
 	for index, item := range items.Entries {
