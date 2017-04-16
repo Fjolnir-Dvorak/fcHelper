@@ -70,11 +70,12 @@ type Values struct {
 	ValueEntries []ValueEntry
 }
 type ValueEntry struct {
-	Value       string
-	Key         string
-	Name        string
-	IconName    string
-	Description string
+	Value         string
+	Key           string
+	Name          string
+	IconName      string
+	Description   string
+	ResearchValue string
 }
 type Stages struct {
 	Stages []Stage
@@ -127,19 +128,50 @@ type TerrainDataEntryDef struct {
 	AudioWalkType       string
 	AudioBuildType      string
 	AudioDestroyType    string
-	Tags                string
+	Tags                TagsDef
 	Fuel                string
 	Description         string
 	IconName            string
 	Hardness            string
 	DefaultValue        string
 	Value               string
-	Values              string
+	Values              ValuesDef
 	ModStartValue       string
 	PickReplacement     string
-	Stages              string
+	Stages              StagesDef
 	OreType             string
 	MaxStack            string
+}
+
+type TagsDef struct {
+	Me   string
+	Tags string
+}
+type ValuesDef struct {
+	Me           string
+	ValueEntries ValueEntryDef
+}
+type ValueEntryDef struct {
+	Me            string
+	Value         string
+	Key           string
+	Name          string
+	IconName      string
+	Description   string
+	ResearchValue string
+}
+type StagesDef struct {
+	Me     string
+	Stages StageDef
+}
+type StageDef struct {
+	Me            string
+	RangeMinimum  string
+	RangeMaximum  string
+	TopTexture    string
+	SideTexture   string
+	BottomTexture string
+	GUITexture    string
 }
 
 var (
@@ -182,21 +214,47 @@ var (
 		AudioWalkType:       "AudioWalkType",
 		AudioBuildType:      "AudioBuildType",
 		AudioDestroyType:    "AudioDestroyType",
-		Tags:                "tags",
 		Fuel:                "Fuel",
 		Description:         "Description",
 		IconName:            "IconName",
 		Hardness:            "Hardness",
 		DefaultValue:        "DefaultValue",
 		Value:               "Value",
-		Values:              "Values",
 		ModStartValue:       "ModStartValue",
 		PickReplacement:     "PickReplacement",
-		Stages:              "Stages",
 		OreType:             "OreType",
 		MaxStack:            "MaxStack",
+		Tags: TagsDef{
+			Me:   "tags",
+			Tags: "tag",
+		},
+		Values: ValuesDef{
+			Me: "Values",
+			ValueEntries: ValueEntryDef{
+				Me:            "ValueEntry",
+				Value:         "Value",
+				Key:           "Key",
+				Name:          "Name",
+				IconName:      "IconName",
+				Description:   "Description",
+				ResearchValue: "ResearchValue",
+			},
+		},
+		Stages: StagesDef{
+			Me: "Stages",
+			Stages: StageDef{
+				Me:            "Stage",
+				RangeMinimum:  "RangeMinimum",
+				RangeMaximum:  "RangeMaximum",
+				TopTexture:    "TopTexture",
+				SideTexture:   "SideTexture",
+				BottomTexture: "BottomTexture",
+				GUITexture:    "GUITexture",
+			},
+		},
 	}
 	TerrainDataFilename = "TerrainData.xml"
+	internData          []datatypes.KeyName
 )
 
 func parseTerrainData(element *etree.Element) TerrainDataEntry {
@@ -318,7 +376,7 @@ func parseTerrainData(element *etree.Element) TerrainDataEntry {
 		case TerrainDataDef.AudioDestroyType:
 			item.AudioDestroyType = child.Text()
 			break
-		case TerrainDataDef.Tags:
+		case TerrainDataDef.Tags.Me:
 			//item.Tags = getChildText(child)  // TODO
 			break
 		case TerrainDataDef.Fuel:
@@ -339,8 +397,8 @@ func parseTerrainData(element *etree.Element) TerrainDataEntry {
 		case TerrainDataDef.Value:
 			item.Value = child.Text()
 			break
-		case TerrainDataDef.Values:
-			//item.Values = getChildText(child)  // TODO
+		case TerrainDataDef.Values.Me:
+			item.Values.ValueEntries = getValueEntries(child) // TODO
 			break
 		case TerrainDataDef.ModStartValue:
 			item.ModStartValue = child.Text()
@@ -348,7 +406,7 @@ func parseTerrainData(element *etree.Element) TerrainDataEntry {
 		case TerrainDataDef.PickReplacement:
 			item.PickReplacement = child.Text()
 			break
-		case TerrainDataDef.Stages:
+		case TerrainDataDef.Stages.Me:
 			//item.Stages = getChildText(child)  // TODO
 			break
 		case TerrainDataDef.OreType:
@@ -361,6 +419,45 @@ func parseTerrainData(element *etree.Element) TerrainDataEntry {
 			utilHandleUnknownElement(child.Tag)
 		}
 	}
+	internData = append(internData, datatypes.KeyName{Key: item.Key, Name: item.Name})
+	return item
+}
+func getValueEntries(element *etree.Element) []ValueEntry {
+	children := element.ChildElements()
+	values := make([]ValueEntry, len(children))
+	for index, child := range children {
+		values[index] = getValueEntry(child)
+	}
+	return values
+}
+func getValueEntry(element *etree.Element) ValueEntry {
+	children := element.ChildElements()
+	var item ValueEntry
+	for _, child := range children {
+		switch child.Tag {
+		case TerrainDataDef.Values.ValueEntries.Name:
+			item.Name = child.Text()
+			break
+		case TerrainDataDef.Values.ValueEntries.Key:
+			item.Key = child.Text()
+			break
+		case TerrainDataDef.Values.ValueEntries.Value:
+			item.Value = child.Text()
+			break
+		case TerrainDataDef.Values.ValueEntries.IconName:
+			item.IconName = child.Text()
+			break
+		case TerrainDataDef.Values.ValueEntries.Description:
+			item.Description = child.Text()
+			break
+		case TerrainDataDef.Values.ValueEntries.ResearchValue:
+			item.ResearchValue = child.Text()
+			break
+		default:
+			utilHandleUnknownElement(child.Tag)
+		}
+	}
+	internData = append(internData, datatypes.KeyName{Key: item.Key, Name: item.Name})
 	return item
 }
 
@@ -382,11 +479,12 @@ func ParseTerrainDataXMLFile(filename string) TerrainData {
 
 func (items *TerrainData) CreateKeyMap() datatypes.KeyNameList {
 
-	keyNames := make([]datatypes.KeyName, len(items.Entries))
-	for index, item := range items.Entries {
-		keyName := datatypes.KeyName{Key: item.Key, Name: item.Name}
-		keyNames[index] = keyName
-	}
+	//keyNames := make([]datatypes.KeyName, len(items.Entries))
+	//for index, item := range items.Entries {
+	//	keyName := datatypes.KeyName{Key: item.Key, Name: item.Name}
+	//	keyNames[index] = keyName
+	//}
 
-	return datatypes.CreateKeyNameList(keyNames)
+	//return datatypes.CreateKeyNameList(keyNames)
+	return datatypes.CreateKeyNameList(internData)
 }
