@@ -81,13 +81,11 @@ var (
 // extractCmd represents the extract command
 var extractCmd = &cobra.Command{
 	Use:   "extract",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "Extracts strings to localize..",
+	Long: `Extracts strings out of the handbook which needs to be localized.
+	Those Keys will be stored in an Android-xml language files.
+	It also is able to generate template-files which will be used to reinject
+	the translated keys back into the xml.`,
 	Run: doExtract,
 }
 
@@ -116,15 +114,15 @@ func doExtract(cmd *cobra.Command, args []string) {
 		destDir = filepath.Join(destination, templates, "Handbook")
 	}
 	_ = os.MkdirAll(destDir, os.ModePerm)
-	createExcract(av, av_key, destDir)
-	createExcract(co, co_key, destDir)
-	createExcract(cr, cr_key, destDir)
-	createExcract(ma, ma_key, destDir)
-	createExcract(su, su_key, destDir)
+	createExtract(av, av_key, destDir)
+	createExtract(co, co_key, destDir)
+	createExtract(cr, cr_key, destDir)
+	createExtract(ma, ma_key, destDir)
+	createExtract(su, su_key, destDir)
 
 }
 
-func createExcract(name, namecode, temp string) {
+func createExtract(name, namecode, temp string) {
 	gd := filepath.Join(gameDir, "/", handbook, name)
 	dir, _ := ioutil.ReadDir(gd)
 

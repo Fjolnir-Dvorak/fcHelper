@@ -45,13 +45,10 @@ const (
 // repairKeysCmd represents the repairKeys command
 var repairKeysCmd = &cobra.Command{
 	Use:   "repairKeys",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "Repaires missused name-tags in the handbook",
+	Long: `The handbook contains both 'Key' and 'Value' tags as primary key.
+	This will sort through supported Datafiles for key-name mappings and
+	will replace all used 'Name' tags with their corresponding 'Key' tag.`,
 	Run: doRepair,
 }
 
