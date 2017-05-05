@@ -35,6 +35,7 @@ import (
 var (
 	srcItems    string
 	srcHandbook string
+	noName      = false
 )
 
 const (
@@ -56,6 +57,7 @@ func init() {
 	RootCmd.AddCommand(repairKeysCmd)
 	repairKeysCmd.Flags().StringVarP(&srcItems, "itemFiles", "i", "", "Source of all itemfiles.")
 	repairKeysCmd.Flags().StringVarP(&srcHandbook, "handbook", "s", "", "Source of handbook to repair.")
+	repairKeysCmd.Flags().BoolVarP(&noName, "noName", "n", noName, "Activate if renaming should be deactivated")
 
 	// Here you will define your flags and configuration settings.
 
@@ -85,7 +87,7 @@ func doRepair(cmd *cobra.Command, args []string) {
 			keylist.Merge(items.CreateKeyMap())
 			break
 		default:
-			fmt.Printf("!!! NOT SUPPORTED FILETYPE: %s", baseFile)
+			fmt.Printf("!!! NOT SUPPORTED FILETYPE: %s\n", baseFile)
 		}
 	}
 
@@ -124,7 +126,9 @@ func readDir(directory string, keylist datatypes.KeyNameList) {
 				child.Tag = Key
 				child.SetText(key)
 				_ = doc.WriteToFile(basefile)
-				os.Rename(basefile, filepath.Join(directory, key+".xml"))
+				if !noName {
+					os.Rename(basefile, filepath.Join(directory, key+".xml"))
+				}
 				//os.Rename(basefile, filepath.Join(directory, "_"+key+"_"+fileInf.Name()))
 				break
 			}
