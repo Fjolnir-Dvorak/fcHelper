@@ -23,6 +23,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/Fjolnir-Dvorak/fcHelper/util"
 	"github.com/beevik/etree"
 	"github.com/spf13/cobra"
 	"io/ioutil"
@@ -71,11 +72,11 @@ const (
 )
 
 var (
-	keywords    = [...]string{title, header, paragraph, left, right}
-	gameDir     string
-	destination string
-	template    bool
-	language    string
+	keywords        = [...]string{title, header, paragraph, left, right}
+	gameDir         string
+	destination     string
+	createTemplates bool
+	language        string
 )
 
 // extractCmd represents the extract command
@@ -84,7 +85,7 @@ var extractCmd = &cobra.Command{
 	Short: "Extracts strings to localize..",
 	Long: `Extracts strings out of the handbook which needs to be localized.
 	Those Keys will be stored in an Android-xml language files.
-	It also is able to generate template-files which will be used to reinject
+	It also is able to generate createTemplates-files which will be used to reinject
 	the translated keys back into the xml.`,
 	Run: doExtract,
 }
@@ -94,7 +95,7 @@ func init() {
 	extractCmd.Flags().StringVarP(&gameDir, "gameDir", "g", "", "Directory containing FortressCraft Evolved.")
 	extractCmd.Flags().StringVarP(&destination, "destination", "d", out, "Destination Directory to create the parsed files.")
 	extractCmd.Flags().StringVarP(&language, "language", "l", "", "Used language shortkey.")
-	extractCmd.Flags().BoolVarP(&template, "template", "t", false, "Wether to generate xml-templates.")
+	extractCmd.Flags().BoolVarP(&createTemplates, "createTemplates", "t", false, "Wether to generate xml-templates.")
 
 	// Here you will define your flags and configuration settings.
 
@@ -110,7 +111,7 @@ func init() {
 
 func doExtract(cmd *cobra.Command, args []string) {
 	destDir := destination
-	if template {
+	if createTemplates {
 		destDir = filepath.Join(destination, templates, "Handbook")
 	}
 	_ = os.MkdirAll(destDir, os.ModePerm)
@@ -127,7 +128,7 @@ func createExtract(name, namecode, temp string) {
 	dir, _ := ioutil.ReadDir(gd)
 
 	dest := filepath.Join(temp, name)
-	if template {
+	if createTemplates {
 		os.Mkdir(dest, os.ModePerm)
 	}
 
@@ -160,8 +161,10 @@ func createExtract(name, namecode, temp string) {
 			}
 		}
 
-		if template {
-			_ = doc.WriteToFile(filepath.Join(dest, fileInf.Name()))
+		if createTemplates {
+			out, _ := doc.WriteToString()
+			util.WriteStringToFile(filepath.Join(dest, fileInf.Name()), out)
+			//_ = doc.WriteToFile(filepath.Join(dest, fileInf.Name()))
 		}
 	}
 
@@ -225,6 +228,7 @@ func hasChild(element *etree.Element) bool {
 func surroundCode(code string) string {
 	surroundLeft := strings.Repeat(string(surround[0]), surroundAmount)
 	surroundRight := strings.Repeat(string(surround[1]), surroundAmount)
+	code = " index .Data \"" + code + "\" "
 	surrounded := surroundLeft + code + surroundRight
 	return surrounded
 }

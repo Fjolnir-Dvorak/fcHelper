@@ -11,7 +11,7 @@ var compareCmd = &cobra.Command{
 	 in second file) with '+++' in front and the surplus (keys in first file) with '---'
 	 in front. If the comparison file will be applied to the base file it will have the
 	 same key structure as the second one.`,
-	Run: doExtract,
+	Run: doCompare,
 }
 
 func init() {
@@ -19,7 +19,7 @@ func init() {
 	compareCmd.Flags().StringVarP(&gameDir, "gameDir", "g", "", "Directory containing FortressCraft Evolved.")
 	compareCmd.Flags().StringVarP(&destination, "destination", "d", out, "Destination Directory to create the parsed files.")
 	compareCmd.Flags().StringVarP(&language, "language", "l", "", "Used language shortkey.")
-	compareCmd.Flags().BoolVarP(&template, "template", "t", false, "Wether to generate xml-templates.")
+	compareCmd.Flags().BoolVarP(&createTemplates, "createTemplates", "t", false, "Wether to generate xml-templates.")
 
 	// Here you will define your flags and configuration settings.
 
@@ -30,5 +30,9 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// extractCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+
+}
+
+func doCompare(cmd *cobra.Command, args []string) {
 
 }

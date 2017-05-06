@@ -25,17 +25,20 @@ import (
 
 	"github.com/Fjolnir-Dvorak/fcHelper/datatypes"
 	"github.com/Fjolnir-Dvorak/fcHelper/forgecraft"
+	"github.com/Fjolnir-Dvorak/fcHelper/util"
 	"github.com/beevik/etree"
 	"github.com/spf13/cobra"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 var (
-	srcItems    string
-	srcHandbook string
-	noName      = false
+	srcItems     string
+	srcHandbook  string
+	noName       = false
+	spaceReplace = false
 )
 
 const (
@@ -57,7 +60,8 @@ func init() {
 	RootCmd.AddCommand(repairKeysCmd)
 	repairKeysCmd.Flags().StringVarP(&srcItems, "itemFiles", "i", "", "Source of all itemfiles.")
 	repairKeysCmd.Flags().StringVarP(&srcHandbook, "handbook", "s", "", "Source of handbook to repair.")
-	repairKeysCmd.Flags().BoolVarP(&noName, "noName", "n", noName, "Activate if renaming should be deactivated")
+	repairKeysCmd.Flags().BoolVarP(&noName, "noName", "n", noName, "Activate if renaming should be deactivated.")
+	repairKeysCmd.Flags().BoolVarP(&spaceReplace, "spaceToUnderscore", "u", spaceReplace, "Replaces spaces to underscores. Only in addition to --noName")
 
 	// Here you will define your flags and configuration settings.
 
@@ -125,8 +129,14 @@ func readDir(directory string, keylist datatypes.KeyNameList) {
 				//fmt.Printf("Key {{%s}} Found for name: %s ||| File: %s\n", key, name, basefile)
 				child.Tag = Key
 				child.SetText(key)
-				_ = doc.WriteToFile(basefile)
-				if !noName {
+				out, _ := doc.WriteToString()
+				util.WriteStringToFile(basefile, out)
+				if noName {
+					if spaceReplace {
+						sanitizedName := strings.Replace(fileInf.Name(), " ", "_", -1)
+						os.Rename(basefile, filepath.Join(directory, sanitizedName))
+					}
+				} else {
 					os.Rename(basefile, filepath.Join(directory, key+".xml"))
 				}
 				//os.Rename(basefile, filepath.Join(directory, "_"+key+"_"+fileInf.Name()))
