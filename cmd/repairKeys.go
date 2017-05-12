@@ -130,7 +130,7 @@ func readDir(directory string, keylist datatypes.KeyNameList) {
 				child.Tag = Key
 				child.SetText(key)
 				out, _ := doc.WriteToString()
-				util.WriteStringToFile(basefile, out)
+				util.WriteRawStringToFile(basefile, out)
 				if noName {
 					if spaceReplace {
 						sanitizedName := strings.Replace(fileInf.Name(), " ", "_", -1)

@@ -1,13 +1,15 @@
 package cmd
 
 import (
-	"bufio"
+	"bytes"
 	"fmt"
+	"github.com/Fjolnir-Dvorak/fcHelper/util"
 	"github.com/beevik/etree"
 	"github.com/spf13/cobra"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"text/template"
 )
@@ -64,8 +66,16 @@ func doCreate(cmd *cobra.Command, args []string) {
 
 		splitted := strings.Split(langDirName, "-")
 		langCode := ""
+
 		if len(splitted) == 2 {
 			langCode = splitted[1]
+		}
+		if langCode == "" {
+			langCode = "english"
+		} else {
+			if val, ok := util.LangCodes[langCode]; ok {
+				langCode = val
+			}
 		}
 
 		langFiles, _ := ioutil.ReadDir(langDir)
@@ -78,31 +88,52 @@ func doCreate(cmd *cobra.Command, args []string) {
 
 				handbookDirName := strings.Split(strings.Split(langFileInfo.Name(), "-")[1], ".")[0]
 
-				outputDir := filepath.Join(createOut, "Handbook", handbookDirName, langCode)
+				var outputDir string
+				if langCode == "english" {
+					outputDir = filepath.Join(createOut, "Handbook", handbookDirName)
+				} else {
+					outputDir = filepath.Join(createOut, "Handbook", handbookDirName, langCode)
+				}
 				handbookDir := filepath.Join(templateDir, "Handbook", handbookDirName)
 
 				fmt.Printf("        Creating Directory if not existent: %s\n", outputDir)
 				os.MkdirAll(outputDir, os.ModePerm)
 				toParse, _ := ioutil.ReadDir(handbookDir)
 				for _, tempFile := range toParse {
-					outputFile := filepath.Join(outputDir, tempFile.Name())
 					templateBase := filepath.Join(handbookDir, tempFile.Name())
-
 					fmt.Printf("- Parsing %s\n", templateBase)
 
-					fo, err := os.Create(outputFile)
-					if err != nil {
-						panic(err)
-					}
-					defer fo.Close()
-
-					f := bufio.NewWriter(fo)
-					defer f.Flush()
 					t, _ := template.ParseFiles(templateBase)
-					_ = t.Execute(f, temp)
+					var b bytes.Buffer
+					_ = t.Execute(&b, temp)
+
+					re := regexp.MustCompile("<Key>(.*?)</Key>")
+					match := re.FindStringSubmatch(b.String())
+					filename := tempFile.Name()
+					if len(match) >= 1 {
+						filename = match[1] + ".xml"
+					}
+
+					outputFile := filepath.Join(outputDir, filename)
+					util.WriteStringToFile(outputFile, b.String())
 				}
 			} else if langFileInfo.Name() == "master.xml" {
-
+				fmt.Println("Changing the first two nodes of " + file)
+				doc := etree.NewDocument()
+				if err := doc.ReadFromFile(file); err != nil {
+					panic(err)
+				}
+				newDoc := etree.NewDocument()
+				doc.CreateProcInst("xml", `version="1.0" encoding="UTF-8"`)
+				newTag := newDoc.CreateElement("languages")
+				for _, parent := range doc.ChildElements() {
+					parent.Tag = langCode
+					newTag.AddChild(parent)
+				}
+				outputDir := filepath.Join(createOut, "master", langCode)
+				os.MkdirAll(outputDir, os.ModePerm)
+				outputFile := filepath.Join(outputDir, "master.xml")
+				newDoc.WriteToFile(outputFile)
 			}
 		}
 	}

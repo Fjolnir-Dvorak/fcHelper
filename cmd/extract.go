@@ -163,7 +163,7 @@ func createExtract(name, namecode, temp string) {
 
 		if createTemplates {
 			out, _ := doc.WriteToString()
-			util.WriteStringToFile(filepath.Join(dest, fileInf.Name()), out)
+			util.WriteRawStringToFile(filepath.Join(dest, fileInf.Name()), out)
 			//_ = doc.WriteToFile(filepath.Join(dest, fileInf.Name()))
 		}
 	}

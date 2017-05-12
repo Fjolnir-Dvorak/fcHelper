@@ -2,3 +2,6 @@
 test/*
 fc_out/*
 scripts/*
+*.sh
+*.7z
+
