@@ -6,6 +6,7 @@ import (
 	"github.com/Fjolnir-Dvorak/fcHelper/util"
 	"github.com/beevik/etree"
 	"github.com/spf13/cobra"
+	"html"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -153,6 +154,7 @@ func createMap(filename string) map[string]string {
 		for _, child := range parent.ChildElements() {
 			key := child.SelectAttrValue("name", "")
 			value := child.Text()
+			value = html.EscapeString(value)
 			values[key] = value
 		}
 	}
