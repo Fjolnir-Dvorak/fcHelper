@@ -23,6 +23,7 @@ package cmd
 import (
 	"fmt"
 
+	. "github.com/Fjolnir-Dvorak/fcHelper/datatypes"
 	"github.com/Fjolnir-Dvorak/fcHelper/util"
 	"github.com/beevik/etree"
 	"github.com/spf13/cobra"
@@ -31,11 +32,6 @@ import (
 	"path/filepath"
 	"strings"
 )
-
-type KeyValue struct {
-	Key   string
-	Value string
-}
 
 const (
 	handbook  = "64/Default/Handbook"
@@ -178,18 +174,7 @@ func createExtract(name, namecode, temp string) {
 		os.MkdirAll(directory, os.ModePerm)
 		filename = filepath.Join(directory, filePrefix+strings.Replace(name, " ", "_", -1)+".xml")
 	}
-	createXML(keys, filename)
-}
-func createXML(values []KeyValue, filename string) {
-	doc := etree.NewDocument()
-	doc.CreateProcInst("xml", `version="1.0" encoding="UTF-8"`)
-	resources := doc.CreateElement("resources")
-	for _, value := range values {
-		key := resources.CreateElement("string")
-		key.CreateAttr("name", value.Key)
-		key.SetText(value.Value)
-	}
-	doc.WriteToFile(filename)
+	util.CreateXLFkv(keys, filename)
 }
 
 func recursiveIteration(element *etree.Element, iterator int, values []KeyValue, codebase string) (int, []KeyValue) {

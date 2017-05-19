@@ -32,6 +32,10 @@ func CreateKeyNameList(keyNames []KeyName) KeyNameList {
 	return KeyNameList{list{keys, names}}
 }
 
+func createKeyNameList(keys, names []string) KeyNameList {
+	return KeyNameList{list{keys, names}}
+}
+
 func generateLists(keyNames []KeyName) ([]string, []string) {
 	keys := make([]string, len(keyNames))
 	names := make([]string, len(keyNames))
@@ -74,7 +78,55 @@ func (list *KeyNameList) Append(keyMap []KeyName) {
 	list.list.name = append(list.list.name, newNames...)
 }
 
-func (list *KeyNameList) Merge(nameList KeyNameList) {
+func (list *KeyNameList) ConCat(nameList KeyNameList) {
 	list.list.key = append(list.list.key, nameList.list.key...)
 	list.list.name = append(list.list.name, nameList.list.name...)
+}
+
+func (list *KeyNameList) Mergesort() KeyNameList {
+	keys, names := mergesort(list.list.key, list.list.name)
+	return createKeyNameList(keys, names)
+}
+
+func mergesort(key, name []string) ([]string, []string) {
+	if len(key) < 2 {
+		return key, name
+	}
+	mid := len(key) / 2
+	key1, name1 := mergesort(key[:mid], name[:mid])
+	key2, name2 := mergesort(key[mid:], name[mid:])
+	return merge(key1, name1, key2, name2)
+}
+func merge(key1, name1, key2, name2 []string) ([]string, []string) {
+	if len(key1) == 0 {
+		return key2, name2
+	}
+	if len(key2) == 0 {
+		return key1, name1
+	}
+	size := len(key1) + len(key2)
+	newKey := make([]string, size, size)
+	newName := make([]string, size, size)
+
+	count1, count2 := 0, 0
+	for i := 0; i < size; i++ {
+		if len(key1) <= count1 {
+			newKey[i] = key2[count2]
+			newName[i] = name2[count2]
+			count2++
+		} else if len(key2) <= count2 {
+			newKey[i] = key1[count1]
+			newName[i] = name1[count1]
+			count1++
+		} else if key1[count1] <= key2[count2] {
+			newKey[i] = key1[count1]
+			newName[i] = name1[count1]
+			count1++
+		} else {
+			newKey[i] = key2[count2]
+			newName[i] = name2[count2]
+			count2++
+		}
+	}
+	return newKey, newName
 }

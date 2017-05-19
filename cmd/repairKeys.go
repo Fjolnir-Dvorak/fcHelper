@@ -84,11 +84,11 @@ func doRepair(cmd *cobra.Command, args []string) {
 		switch file.Name() {
 		case forgecraft.ItemsFilename:
 			items := forgecraft.ParseItemsXMLFile(baseFile)
-			keylist.Merge(items.CreateKeyMap())
+			keylist.ConCat(items.CreateKeyMap())
 			break
 		case forgecraft.TerrainDataFilename:
 			items := forgecraft.ParseTerrainDataXMLFile(baseFile)
-			keylist.Merge(items.CreateKeyMap())
+			keylist.ConCat(items.CreateKeyMap())
 			break
 		default:
 			fmt.Printf("!!! NOT SUPPORTED FILETYPE: %s\n", baseFile)

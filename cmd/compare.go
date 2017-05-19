@@ -1,6 +1,13 @@
 package cmd
 
-import "github.com/spf13/cobra"
+import (
+	"fmt"
+	. "github.com/Fjolnir-Dvorak/fcHelper/datatypes"
+	"github.com/Fjolnir-Dvorak/fcHelper/util"
+	"github.com/spf13/cobra"
+	"os"
+	"path/filepath"
+)
 
 // extractCmd represents the extract command
 var compareCmd = &cobra.Command{
@@ -14,12 +21,17 @@ var compareCmd = &cobra.Command{
 	Run: doCompare,
 }
 
+var (
+	compOld string
+	compNew string
+	compOut string
+)
+
 func init() {
 	RootCmd.AddCommand(compareCmd)
-	compareCmd.Flags().StringVarP(&gameDir, "gameDir", "g", "", "Directory containing FortressCraft Evolved.")
-	compareCmd.Flags().StringVarP(&destination, "destination", "d", out, "Destination Directory to create the parsed files.")
-	compareCmd.Flags().StringVarP(&language, "language", "l", "", "Used language shortkey.")
-	compareCmd.Flags().BoolVarP(&createTemplates, "createTemplates", "t", false, "Wether to generate xml-templates.")
+	compareCmd.Flags().StringVarP(&compOld, "base", "b", "", "Old xml version.")
+	compareCmd.Flags().StringVarP(&compNew, "new", "n", "", "New xml version.")
+	compareCmd.Flags().StringVarP(&compOut, "out", "o", out, "Output directory")
 
 	// Here you will define your flags and configuration settings.
 
@@ -34,5 +46,50 @@ func init() {
 }
 
 func doCompare(cmd *cobra.Command, args []string) {
+	// Load both files
+	_, old := util.ParseXLFKeyName(compOld)
+	_, new := util.ParseXLFKeyName(compNew)
+	old = old.Mergesort()
+	new = new.Mergesort()
+	oldIt := old.Iterate()
+	newIt := new.Iterate()
+	oldExtra := []KeyName{}
+	newExtra := []KeyName{}
 
+	countOld, countNew := 0, 0
+
+	fmt.Println("Start comparing")
+	for countOld < len(oldIt) || countNew < len(newIt) {
+		//fmt.Printf("countOld: %d, countNew: %d\n", countOld, countNew)
+		if countOld >= len(oldIt) {
+			// Old is empty. Only new keys are left
+			fmt.Printf("Adding keys to newExtra: %d\n", len(newIt[countNew:]))
+			newExtra = append(newExtra, newIt[countNew:]...)
+			break
+		} else if countNew >= len(newIt) {
+			// New is empty. Only old keys are left
+			fmt.Printf("Adding keys to oldExtra: %d\n", len(oldIt[countOld:]))
+			oldExtra = append(oldExtra, oldIt[countOld:]...)
+			break
+		} else if oldIt[countOld].Key == newIt[countNew].Key {
+			countOld++
+			countNew++
+		} else if oldIt[countOld].Key < newIt[countNew].Key {
+			fmt.Printf("Adding key to oldExtra: %s\n", oldIt[countOld].Key)
+			// old has a key new hasn't
+			oldExtra = append(oldExtra, oldIt[countOld])
+			countOld++
+		} else {
+			fmt.Printf("Adding key to newExtra: %s\n", newIt[countNew].Key)
+			// new has a key old hasn't
+			newExtra = append(newExtra, newIt[countNew])
+			countNew++
+		}
+	}
+	// parse xml and collect keys
+	os.MkdirAll(compOut, os.ModePerm)
+	oldFilename := filepath.Join(compOut, "baseExtra.xml")
+	newFilename := filepath.Join(compOut, "newExtra.xml")
+	util.CreateXLFkn(oldExtra, oldFilename)
+	util.CreateXLFkn(newExtra, newFilename)
 }

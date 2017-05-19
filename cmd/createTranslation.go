@@ -6,7 +6,6 @@ import (
 	"github.com/Fjolnir-Dvorak/fcHelper/util"
 	"github.com/beevik/etree"
 	"github.com/spf13/cobra"
-	"html"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -84,7 +83,7 @@ func doCreate(cmd *cobra.Command, args []string) {
 			// TODO Make this more recursive
 			file := filepath.Join(langDir, langFileInfo.Name())
 			if strings.HasPrefix(langFileInfo.Name(), "handbook") {
-				data := createMap(file)
+				_, data := util.ParseXLFMap(file)
 				temp := mapp{Data: data}
 
 				handbookDirName := strings.Split(strings.Split(langFileInfo.Name(), "-")[1], ".")[0]
@@ -138,27 +137,6 @@ func doCreate(cmd *cobra.Command, args []string) {
 			}
 		}
 	}
-}
-
-func readTemplates() {
-
-}
-func createMap(filename string) map[string]string {
-	fmt.Println("Reading Keys from " + filename)
-	doc := etree.NewDocument()
-	if err := doc.ReadFromFile(filename); err != nil {
-		panic(err)
-	}
-	values := make(map[string]string)
-	for _, parent := range doc.ChildElements() {
-		for _, child := range parent.ChildElements() {
-			key := child.SelectAttrValue("name", "")
-			value := child.Text()
-			value = html.EscapeString(value)
-			values[key] = value
-		}
-	}
-	return values
 }
 
 func validInputCreate() bool {
