@@ -44,7 +44,7 @@ func doMarkdown(cmd *cobra.Command, args []string) {
 }
 
 func init() {
-	generateCmd.AddCommand(markdownCmd)
+	GenerateCmd.AddCommand(markdownCmd)
 	markdownCmd.Flags().StringVarP(&defaultMarkdown, "destination", "d",
 		defaultMarkdown, "Output location.")
 }

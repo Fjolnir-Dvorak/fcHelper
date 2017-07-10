@@ -44,7 +44,7 @@ func doCompletion(cmd *cobra.Command, args []string) {
 }
 
 func init() {
-	generateCmd.AddCommand(completionCmd)
+	GenerateCmd.AddCommand(completionCmd)
 	completionCmd.Flags().StringVarP(&defaultCompletion, "destination", "d",
 		defaultCompletion, "Output location and file name.")
 }

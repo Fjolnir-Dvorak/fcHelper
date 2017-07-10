@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-package cmd
+package game
 
 import (
 	"fmt"
@@ -57,7 +57,7 @@ var repairKeysCmd = &cobra.Command{
 }
 
 func init() {
-	RootCmd.AddCommand(repairKeysCmd)
+	GameCMD.AddCommand(repairKeysCmd)
 	repairKeysCmd.Flags().StringVarP(&srcItems, "itemFiles", "i", "", "Source of all itemfiles.")
 	repairKeysCmd.Flags().StringVarP(&srcHandbook, "handbook", "s", "", "Source of handbook to repair.")
 	repairKeysCmd.Flags().BoolVarP(&noName, "noName", "n", noName, "Activate if renaming should be deactivated.")

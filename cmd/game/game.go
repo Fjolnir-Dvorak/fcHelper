@@ -18,18 +18,19 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-package generate
+package game
 
 import (
 	"github.com/spf13/cobra"
+	"path/filepath"
 )
 
-// This command
-var GenerateCmd = &cobra.Command{
-	Use:   "generate",
-	Short: "Manipulates or generates game files.",
-	Long:  `Please specify a subcommand for gamefile manipulation.`,
-}
+// generateCmd represents the generate command
+var (
+	GameDir  string
+	NoConfig bool
+)
 
 func Init() {
+
 }

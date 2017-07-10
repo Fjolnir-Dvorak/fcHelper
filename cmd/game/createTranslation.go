@@ -1,4 +1,4 @@
-package cmd
+package game
 
 import (
 	"bytes"
@@ -6,57 +6,74 @@ import (
 	"github.com/Fjolnir-Dvorak/fcHelper/util"
 	"github.com/beevik/etree"
 	"github.com/spf13/cobra"
+	"gopkg.in/src-d/go-git.v4"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
 	"text/template"
+	cmd2 "github.com/Fjolnir-Dvorak/fcHelper/cmd"
+	"github.com/hashicorp/hcl/json/token"
+)
+
+const (
+	gitBranch = "weblate-master"
+	gitName = "Fortress-Craft-Evolved-Translation"
 )
 
 var (
-	translationDir string
-	templateDir    string
-	createOut      string
+	TransProject string
+	DeployDest   string
+	TestLang     string
+	UseCommit    string
+	gitCloneConfig = &git.CloneOptions{
+		URL: "https://github.com/zebra1993/Fortress-Craft-Evolved-Translation.git",
+		Progress: os.Stdout,
+	}
+	gitPullConfig = &git.PullOptions{
+		ReferenceName: gitBranch,
+	}
 )
 
 type mapp struct {
 	Data map[string]string
 }
 
-// createCmd represents the createTranslation command
-var createCmd = &cobra.Command{
-	Use:   "createTranslation",
-	Short: "Creates valid game files from the translation data.",
-	Long: `Injects the translated Keys back into the handbook files. changes
-the base nodes from the master translation files so they are valid, too.`,
-	Run: doCreate,
-}
-
 func init() {
-	RootCmd.AddCommand(createCmd)
-	createCmd.Flags().StringVarP(&translationDir, "translationFiles", "g", filepath.Join(out, "res"), "Directory containing translated Files (calles 'res').")
-	createCmd.Flags().StringVarP(&templateDir, "templates", "d", filepath.Join(out, "templates"), "Directory containing the handbook templates.")
-	createCmd.Flags().StringVarP(&createOut, "destination", "l", filepath.Join(out, "translated"), "Destination directory.")
+}
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// extractCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// extractCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+func handleFatalError() {
 
 }
 
-func doCreate(cmd *cobra.Command, args []string) {
+func DoCreate(cmd *cobra.Command, args []string) {
+	// 1. Test if git repository is initialized
+	// 2. Test if git repository is clean to update
+	// 3. Update git repository
+	// 3.5 Checkout commit if wished.
+	// 4. Pull registry key for FortressCraft Evolved to get the installation directory
+	// 5. Fill the templates with content and deploy all the stuff.
+
+	var gitPath = cmd2.Environ.DataLocal()
+	repo, err := git.PlainOpen(filepath.Join(gitPath, gitName))
+	if err == git.ErrRepositoryNotExists {
+		repo, err = git.PlainClone(gitPath, false, gitCloneConfig)
+		if err != nil {
+			handleFatalError()
+		}
+	}
+
+	err = repo.Pull(gitPullConfig)
+	if err != nil {
+		handleFatalError()
+	}
+
 	if !validInputCreate() {
 		return
 	}
 
-	// Read createTemplates files into a map.
+	// Read template files into a map.
 
 	var translationLanguages, _ = ioutil.ReadDir(translationDir)
 

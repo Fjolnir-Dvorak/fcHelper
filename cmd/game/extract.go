@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-package cmd
+package game
 
 import (
 	"fmt"
@@ -87,7 +87,7 @@ var extractCmd = &cobra.Command{
 }
 
 func init() {
-	RootCmd.AddCommand(extractCmd)
+	GameCMD.AddCommand(extractCmd)
 	extractCmd.Flags().StringVarP(&gameDir, "gameDir", "g", "", "Directory containing FortressCraft Evolved.")
 	extractCmd.Flags().StringVarP(&destination, "destination", "d", out, "Destination Directory to create the parsed files.")
 	extractCmd.Flags().StringVarP(&language, "language", "l", "", "Used language shortkey.")

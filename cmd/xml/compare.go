@@ -1,4 +1,4 @@
-package cmd
+package xml
 
 import (
 	"fmt"
@@ -28,7 +28,7 @@ var (
 )
 
 func init() {
-	RootCmd.AddCommand(compareCmd)
+	XmlCmd.AddCommand(compareCmd)
 	compareCmd.Flags().StringVarP(&compOld, "base", "b", "", "Old xml version.")
 	compareCmd.Flags().StringVarP(&compNew, "new", "n", "", "New xml version.")
 	compareCmd.Flags().StringVarP(&compOut, "out", "o", out, "Output directory")

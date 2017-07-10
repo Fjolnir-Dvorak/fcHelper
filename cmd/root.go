@@ -24,47 +24,47 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/Fjolnir-Dvorak/environ"
+	"github.com/Fjolnir-Dvorak/fcHelper/cmd/game"
+	"github.com/Fjolnir-Dvorak/fcHelper/cmd/generate"
+	"github.com/Fjolnir-Dvorak/fcHelper/cmd/xml"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/Fjolnir-Dvorak/fcHelper/cmd/generate"
+	"path/filepath"
 )
 
-var cfgFile string
+const (
+	VendorName      = "FjolnirDvorak"
+	ApplicationName = "fcHelper"
+	DefaultConf     = "main.yaml"
+)
 
-// RootCmd represents the base command when called without any subcommands
-var RootCmd = &cobra.Command{
-	Use:   "fcHelper",
-	Short: "A Utility program for FortressCraft Evolved",
-	Long: `Used to to ease the burden of xml and translation.
-	Also used to validate wrong xml-tag usages. For more
-	Information view the help of the commands.`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	//	Run: func(cmd *cobra.Command, args []string) { },
-}
+var (
+	cfgFile string
+	Environ environ.Environ
+	defaultConf string
+)
+
 
 // Execute adds all child commands to the root command sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
-	if err := RootCmd.Execute(); err != nil {
+	if err := RootCMD.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(-1)
 	}
 }
 
 func init() {
+	Environ = environ.New(VendorName, ApplicationName)
+	Environ.EnsureExistence(environ.ConfigLocal)
+
 	cobra.OnInitialize(initConfig)
-
-	// Here you will define your flags and configuration settings.
-	// Cobra supports Persistent Flags, which, if defined here,
-	// will be global for your application.
-
-	RootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.fcHelper.yaml)")
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	RootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-
-	generate.Init(RootCmd)
+	defaultConf = filepath.Join(Environ.VarConfigLocal(), DefaultConf)
+	initCMD()
+	generate.Init()
+	game.Init()
+	xml.Init()
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -73,9 +73,10 @@ func initConfig() {
 		viper.SetConfigFile(cfgFile)
 	}
 
-	viper.SetConfigName(".fcHelper") // name of config file (without extension)
-	viper.AddConfigPath("$HOME")     // adding home directory as first search path
-	viper.AutomaticEnv()             // read in environment variables that match
+	viper.SetConfigName(DefaultConf)           // name of config file (without extension)
+	viper.AddConfigPath(Environ.ConfigLocal()) // adding system config directory as first search path
+	viper.SafeWriteConfig()
+	viper.AutomaticEnv() // read in environment variables that match
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {

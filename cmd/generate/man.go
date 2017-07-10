@@ -44,7 +44,7 @@ func doMan(cmd *cobra.Command, args []string) {
 }
 
 func init() {
-	generateCmd.AddCommand(manCmd)
+	GenerateCmd.AddCommand(manCmd)
 	manCmd.Flags().StringVarP(&defaultMan, "destination", "d",
 		defaultMan, "Output location.")
 }

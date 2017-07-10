@@ -44,7 +44,7 @@ func doYaml(cmd *cobra.Command, args []string) {
 }
 
 func init() {
-	generateCmd.AddCommand(yamlCmd)
+	GenerateCmd.AddCommand(yamlCmd)
 	yamlCmd.Flags().StringVarP(&defaultYaml, "destination", "d",
 		defaultYaml, "Output location.")
 }
