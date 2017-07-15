@@ -97,7 +97,7 @@ func DoCreate(cmd *cobra.Command, args []string) {
 		handleFatalError()
 	}
 	translationDir := filepath.Join(repoDir, structures.GitResDir)
-	templateDir := filepath.Join(repoDir, structures.GitTemplateDir)
+	templateDir := filepath.Join(repoDir, structures.GitTemplateHandbookDir)
 
 	var usedGameDir string
 
@@ -142,7 +142,7 @@ func DoCreate(cmd *cobra.Command, args []string) {
 					strings.Split(langFileInfo.Name(), "-")[1],
 					".")[0]
 				handbook := filepath.Join(handbookBase, currentHandbook)
-				templates := filepath.Join(templateDir, "Handbook", currentHandbook)
+				templates := filepath.Join(templateDir, currentHandbook)
 				createHandbookFiles(file, handbook, langCode, templates)
 			} else if langFileInfo.Name() == "master.xml" {
 				createMasterFile(file, langCode, langBase)

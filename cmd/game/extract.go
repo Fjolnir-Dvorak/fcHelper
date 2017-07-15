@@ -23,6 +23,7 @@ package game
 import (
 	"fmt"
 
+	"github.com/Fjolnir-Dvorak/fcHelper/cmd/game/structures"
 	. "github.com/Fjolnir-Dvorak/fcHelper/datatypes"
 	"github.com/Fjolnir-Dvorak/fcHelper/util"
 	"github.com/beevik/etree"
@@ -31,7 +32,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"github.com/Fjolnir-Dvorak/fcHelper/cmd/game/structures"
 )
 
 const (
@@ -54,38 +54,61 @@ const (
 )
 
 var (
-	keywords        = [...]string{title, header, paragraph, left, right}
-	Out     string
-	NoTemplate bool
-	Lang        string
+	keywords     = [...]string{title, header, paragraph, left, right}
+	Out          string
+	NoTemplate   bool
+	NoExtraction bool
+	Lang         string
+	gameDir      string
 )
 
-
 func init() {
+	NoExtraction = false
 }
 
-func doExtract(cmd *cobra.Command, args []string) {
-	destDir := Out
-	// Ensure the template base directory is exsisting
-	if NoTemplate == false {
-		destDir = filepath.Join(destination, templates, "Handbook")
+func DoExtract(cmd *cobra.Command, args []string) {
+	if NoExtraction && NoTemplate {
+		return
 	}
-	_ = os.MkdirAll(destDir, os.ModePerm)
-	createExtract(structures.Av, structures.Av_key, destDir)
-	createExtract(structures.Co, structures.Co_key, destDir)
-	createExtract(structures.Cr, structures.Cr_key, destDir)
-	createExtract(structures.Ma, structures.Ma_key, destDir)
-	createExtract(structures.Su, structures.Su_key, destDir)
+
+	if GameDir != "" {
+		// The user specified another installation directory
+		gameDir = GameDir
+	} else {
+		// Default Steam installation directory
+		gameDir = SteamGameDir
+	}
+
+	// Ensure the template base directory is exsisting
+	templateDir := Out
+	translationDir := Out
+	if NoTemplate == false {
+		templateDir = filepath.Join(Out, structures.GitTemplateHandbookDir)
+	}
+	if NoExtraction == false {
+		languageDir := structures.GitLangDirPrefix
+		if Lang != "en" {
+			languageDir = languageDir + structures.GitLangDirSeparator + Lang
+		}
+		translationDir = filepath.Join(Out, structures.GitResDir, languageDir)
+	}
+	_ = os.MkdirAll(templateDir, os.ModePerm)
+	_ = os.MkdirAll(translationDir, os.ModePerm)
+	createExtract(structures.Av, structures.Av_key, templateDir, translationDir)
+	createExtract(structures.Co, structures.Co_key, templateDir, translationDir)
+	createExtract(structures.Cr, structures.Cr_key, templateDir, translationDir)
+	createExtract(structures.Ma, structures.Ma_key, templateDir, translationDir)
+	createExtract(structures.Su, structures.Su_key, templateDir, translationDir)
 
 }
 
-func createExtract(name, namecode, temp string) {
-	gd := filepath.Join(gameDir, "/", handbook, name)
-	dir, _ := ioutil.ReadDir(gd)
+func createExtract(name, namecode, templDir, transDir string) {
+	handbookDir := filepath.Join(gameDir, structures.Handbook, name)
+	dir, _ := ioutil.ReadDir(handbookDir)
 
-	dest := filepath.Join(temp, name)
-	if createTemplates {
-		os.Mkdir(dest, os.ModePerm)
+	destTempl := filepath.Join(templDir, name)
+	if NoTemplate == false {
+		os.Mkdir(destTempl, os.ModePerm)
 	}
 
 	var keys []KeyValue
@@ -93,7 +116,7 @@ func createExtract(name, namecode, temp string) {
 		if fileInf.IsDir() {
 			continue
 		}
-		basefile := filepath.Join(gd, fileInf.Name())
+		basefile := filepath.Join(handbookDir, fileInf.Name())
 		basename := strings.TrimSuffix(fileInf.Name(), filepath.Ext(fileInf.Name()))
 		basename = strings.Replace(basename, " ", "_", -1)
 		doc := etree.NewDocument()
@@ -117,24 +140,18 @@ func createExtract(name, namecode, temp string) {
 			}
 		}
 
-		if createTemplates {
+		if NoTemplate == false {
 			out, _ := doc.WriteToString()
-			util.WriteRawStringToFile(filepath.Join(dest, fileInf.Name()), out)
-			//_ = doc.WriteToFile(filepath.Join(dest, fileInf.Name()))
+			util.WriteRawStringToFile(filepath.Join(destTempl, fileInf.Name()), out)
+			//_ = doc.WriteToFile(filepath.Join(destTempl, fileInf.Name()))
 		}
 	}
-
-	var filename string
-	if language == "" {
-		directory := filepath.Join(destination, "res", "values")
-		os.MkdirAll(directory, os.ModePerm)
-		filename = filepath.Join(directory, filePrefix+strings.Replace(name, " ", "_", -1)+".xml")
-	} else {
-		directory := filepath.Join(destination, "res", "values"+"-"+language)
-		os.MkdirAll(directory, os.ModePerm)
-		filename = filepath.Join(directory, filePrefix+strings.Replace(name, " ", "_", -1)+".xml")
+	if NoExtraction == false {
+		var filename string
+		filename = filepath.Join(transDir, filePrefix+strings.Replace(name, " ", "_", -1)+".xml")
+		util.CreateXLFkv(keys, filename)
 	}
-	util.CreateXLFkv(keys, filename)
+
 }
 
 func recursiveIteration(element *etree.Element, iterator int, values []KeyValue, codebase string) (int, []KeyValue) {

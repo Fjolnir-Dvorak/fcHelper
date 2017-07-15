@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	"github.com/spf13/cobra"
 	"github.com/Fjolnir-Dvorak/fcHelper/cmd/game"
+	"github.com/spf13/cobra"
 )
 
 var (
@@ -48,6 +48,7 @@ var (
 			Those Keys will be stored in an Android-xml language files.
 			It also is able to generate createTemplates-files which will be used to reinject
 			the translated keys back into the xml.`,
+		Run: game.DoExtract,
 	}
 	GameRepairCMD = &cobra.Command{
 		Use:   "repairKeys",

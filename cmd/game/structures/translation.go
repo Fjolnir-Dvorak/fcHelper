@@ -1,5 +1,6 @@
 package structures
 
+import "path/filepath"
 
 const (
 	GitBranch = "weblate-master"
@@ -17,4 +18,8 @@ const (
 	Cr_key = "CR"
 	Ma_key = "MA"
 	Su_key = "SU"
+)
+
+var (
+	GitTemplateHandbookDir = filepath.Join(GitLangDirPrefix, "Handbook")
 )
