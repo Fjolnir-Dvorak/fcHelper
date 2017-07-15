@@ -99,20 +99,18 @@ func DoCreate(cmd *cobra.Command, args []string) {
 	translationDir := filepath.Join(repoDir, structures.GitResDir)
 	templateDir := filepath.Join(repoDir, structures.GitTemplateHandbookDir)
 
-	var usedGameDir string
-
 	if DeployDest != "" {
 		// Tag deployDest was specified. This has the highest priority
-		usedGameDir = DeployDest
+		gameDir = DeployDest
 	} else if GameDir != "" {
 		// The user specified another installation directory
-		usedGameDir = GameDir
+		gameDir = GameDir
 	} else {
 		// Default Steam installation directory
-		usedGameDir = SteamGameDir
+		gameDir = SteamGameDir
 	}
-	handbookBase := filepath.Join(usedGameDir, structures.Handbook)
-	langBase := filepath.Join(usedGameDir, structures.Lang)
+	handbookBase := filepath.Join(gameDir, structures.Handbook)
+	langBase := filepath.Join(gameDir, structures.Lang)
 
 	// Read template files into a map.
 	var translationLanguages, _ = ioutil.ReadDir(translationDir)

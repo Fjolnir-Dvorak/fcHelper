@@ -23,6 +23,7 @@ package game
 import (
 	"fmt"
 
+	"github.com/Fjolnir-Dvorak/fcHelper/cmd/game/structures"
 	"github.com/Fjolnir-Dvorak/fcHelper/datatypes"
 	"github.com/Fjolnir-Dvorak/fcHelper/forgecraft"
 	"github.com/Fjolnir-Dvorak/fcHelper/util"
@@ -39,6 +40,9 @@ var (
 	srcHandbook  string
 	noName       = false
 	spaceReplace = false
+
+	NoSpace   bool
+	NameToKey bool
 )
 
 const (
@@ -46,36 +50,23 @@ const (
 	Key  = "Key"
 )
 
-// repairKeysCmd represents the repairKeys command
-var repairKeysCmd = &cobra.Command{
-	Use:   "repairKeys",
-	Short: "Repaires missused name-tags in the handbook",
-	Long: `The handbook contains both 'Key' and 'Value' tags as primary key.
-	This will sort through supported Datafiles for key-name mappings and
-	will replace all used 'Name' tags with their corresponding 'Key' tag.`,
-	Run: doRepair,
-}
-
 func init() {
-	GameCMD.AddCommand(repairKeysCmd)
-	repairKeysCmd.Flags().StringVarP(&srcItems, "itemFiles", "i", "", "Source of all itemfiles.")
-	repairKeysCmd.Flags().StringVarP(&srcHandbook, "handbook", "s", "", "Source of handbook to repair.")
-	repairKeysCmd.Flags().BoolVarP(&noName, "noName", "n", noName, "Activate if renaming should be deactivated.")
-	repairKeysCmd.Flags().BoolVarP(&spaceReplace, "spaceToUnderscore", "u", spaceReplace, "Replaces spaces to underscores. Only in addition to --noName")
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// repairKeysCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// repairKeysCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-
 }
 
-func doRepair(cmd *cobra.Command, args []string) {
+func DoRepair(cmd *cobra.Command, args []string) {
+	if GameDir != "" {
+		// The user specified another installation directory
+		gameDir = GameDir
+	} else {
+		// Default Steam installation directory
+		gameDir = SteamGameDir
+	}
+	noName = !NameToKey
+	spaceReplace = !NoSpace
+
+	srcItems = filepath.Join(gameDir, structures.Data)
+	srcHandbook = filepath.Join(gameDir, structures.Handbook)
+
 	files, _ := ioutil.ReadDir(srcItems)
 	keylist := datatypes.InitEmptyKeyNameList()
 	for _, file := range files {

@@ -29,6 +29,7 @@ var (
 	SteamGameDir string
 	GameDir  string
 	NoConfig bool
+	gameDir      string
 )
 
 func Init() {

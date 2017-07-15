@@ -59,7 +59,6 @@ var (
 	NoTemplate   bool
 	NoExtraction bool
 	Lang         string
-	gameDir      string
 )
 
 func init() {

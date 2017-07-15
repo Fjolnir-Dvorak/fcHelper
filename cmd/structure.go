@@ -56,6 +56,7 @@ var (
 		Long: `The handbook contains both 'Key' and 'Value' tags as primary key.
 			This will sort through supported Datafiles for key-name mappings and
 			will replace all used 'Name' tags with their corresponding 'Key' tag.`,
+		Run: game.DoRepair,
 	}
 	GenerateCompletionCMD = &cobra.Command{
 		Use:   "completion",
