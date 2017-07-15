@@ -126,7 +126,7 @@ func initCMD() {
 	GameCMD.Flags().StringVarP(&game.GameDir, "gameDir", "g", "", "Optional. Define this if you do not want to use your Steam directory.")
 	GameCMD.Flags().BoolVarP(&game.NoConfig, "noConfig", "n", false, "Deactivates the parsing of the config file.")
 
-	GameCreateTranslationCMD.Flags().StringVarP(&game.TransProject, "transProject", "s", "", "Optional. This is the path of the git translation repo.")
+	GameCreateTranslationCMD.Flags().StringVarP(&game.TransProject, "transProject", "s", "", "Optional. This is the path of the git translation repo. Deactivates 'useCommit' and does not pull updates from remote.")
 	GameCreateTranslationCMD.Flags().StringVarP(&game.DeployDest, "deployDest", "d", "", "Optional. Specify if you do not want to deploy into gameDir")
 	GameCreateTranslationCMD.Flags().StringVarP(&game.TestLang, "TestLang", "l", "de", "Defines which language should be used for TestLang. Language-Code.")
 	GameCreateTranslationCMD.Flags().StringVarP(&game.UseCommit, "useCommit", "c", "", "Specifies a commit which should be checked out and used.")

@@ -3,6 +3,8 @@ package game
 import (
 	"bytes"
 	"fmt"
+	cmd2 "github.com/Fjolnir-Dvorak/fcHelper/cmd"
+	"github.com/Fjolnir-Dvorak/fcHelper/cmd/game/structures"
 	"github.com/Fjolnir-Dvorak/fcHelper/util"
 	"github.com/beevik/etree"
 	"github.com/spf13/cobra"
@@ -13,26 +15,23 @@ import (
 	"regexp"
 	"strings"
 	"text/template"
-	cmd2 "github.com/Fjolnir-Dvorak/fcHelper/cmd"
-	"github.com/hashicorp/hcl/json/token"
-)
-
-const (
-	gitBranch = "weblate-master"
-	gitName = "Fortress-Craft-Evolved-Translation"
 )
 
 var (
-	TransProject string
-	DeployDest   string
-	TestLang     string
-	UseCommit    string
+	TransProject   string
+	DeployDest     string
+	TestLang       string
+	UseCommit      string
 	gitCloneConfig = &git.CloneOptions{
-		URL: "https://github.com/zebra1993/Fortress-Craft-Evolved-Translation.git",
+		URL:      "https://github.com/zebra1993/Fortress-Craft-Evolved-Translation.git",
 		Progress: os.Stdout,
 	}
 	gitPullConfig = &git.PullOptions{
-		ReferenceName: gitBranch,
+		ReferenceName: structures.GitBranch,
+		RemoteName:    structures.GitRemote,
+	}
+	gitCeckoutConfig = &git.CheckoutOptions{
+		Branch: structures.GitBranch,
 	}
 )
 
@@ -44,7 +43,37 @@ func init() {
 }
 
 func handleFatalError() {
+	// TODO IMPLEMENT ME!
+}
 
+func UpdateGit(path string, name string) *git.Repository {
+	var gitPath = filepath.Join(path, name)
+	repo, err := git.PlainOpen(gitPath)
+	if err == git.ErrRepositoryNotExists {
+		repo, err = git.PlainClone(gitPath, false, gitCloneConfig)
+		if err != nil {
+			handleFatalError()
+		}
+	}
+	worktree, err := repo.Worktree()
+	worktree.Checkout(gitCeckoutConfig)
+	err = repo.Pull(gitPullConfig)
+	if err != nil {
+		handleFatalError()
+	}
+	return repo
+}
+
+func ValidateProject(project string) bool {
+	fileInfo, err := os.Stat(project)
+	if err != nil {
+		handleFatalError()
+	}
+	if !fileInfo.IsDir() {
+		handleFatalError()
+	}
+	return true
+	// TODO IMPLEMENT ME!
 }
 
 func DoCreate(cmd *cobra.Command, args []string) {
@@ -54,35 +83,45 @@ func DoCreate(cmd *cobra.Command, args []string) {
 	// 3.5 Checkout commit if wished.
 	// 4. Pull registry key for FortressCraft Evolved to get the installation directory
 	// 5. Fill the templates with content and deploy all the stuff.
-
-	var gitPath = cmd2.Environ.DataLocal()
-	repo, err := git.PlainOpen(filepath.Join(gitPath, gitName))
-	if err == git.ErrRepositoryNotExists {
-		repo, err = git.PlainClone(gitPath, false, gitCloneConfig)
-		if err != nil {
-			handleFatalError()
-		}
+	var repoDir string
+	var valid bool
+	if TransProject == "" {
+		_ = UpdateGit(cmd2.Environ.DataLocal(), structures.GitName)
+		repoDir = filepath.Join(cmd2.Environ.DataLocal(), structures.GitName)
+		valid = ValidateProject(repoDir)
+	} else {
+		valid = ValidateProject(TransProject)
+		repoDir = TransProject
 	}
-
-	err = repo.Pull(gitPullConfig)
-	if err != nil {
+	if !valid {
 		handleFatalError()
 	}
+	translationDir := filepath.Join(repoDir, structures.GitResDir)
+	templateDir := filepath.Join(repoDir, structures.GitTemplateDir)
 
-	if !validInputCreate() {
-		return
+	var usedGameDir string
+
+	if DeployDest != "" {
+		// Tag deployDest was specified. This has the highest priority
+		usedGameDir = DeployDest
+	} else if GameDir != "" {
+		// The user specified another installation directory
+		usedGameDir = GameDir
+	} else {
+		// Default Steam installation directory
+		usedGameDir = SteamGameDir
 	}
+	handbookBase := filepath.Join(usedGameDir, structures.Handbook)
+	langBase := filepath.Join(usedGameDir, structures.Lang)
 
 	// Read template files into a map.
-
 	var translationLanguages, _ = ioutil.ReadDir(translationDir)
-
 	for _, langInfo := range translationLanguages {
 		langDirName := langInfo.Name()
 		langDir := filepath.Join(translationDir, langDirName)
 
-		splitted := strings.Split(langDirName, "-")
-		langCode := ""
+		splitted := strings.Split(langDirName, structures.GitLangDirSeparator)
+		var langCode string
 
 		if len(splitted) == 2 {
 			langCode = splitted[1]
@@ -94,89 +133,79 @@ func DoCreate(cmd *cobra.Command, args []string) {
 				langCode = val
 			}
 		}
-
 		langFiles, _ := ioutil.ReadDir(langDir)
 		for _, langFileInfo := range langFiles {
 			// TODO Make this more recursive
 			file := filepath.Join(langDir, langFileInfo.Name())
 			if strings.HasPrefix(langFileInfo.Name(), "handbook") {
-				_, data := util.ParseXLFMap(file)
-				temp := mapp{Data: data}
-
-				handbookDirName := strings.Split(strings.Split(langFileInfo.Name(), "-")[1], ".")[0]
-
-				var outputDir string
-				if langCode == "english" {
-					outputDir = filepath.Join(createOut, "Handbook", handbookDirName)
-				} else {
-					outputDir = filepath.Join(createOut, "Handbook", handbookDirName, langCode)
-				}
-				handbookDir := filepath.Join(templateDir, "Handbook", handbookDirName)
-
-				fmt.Printf("        Creating Directory if not existent: %s\n", outputDir)
-				os.MkdirAll(outputDir, os.ModePerm)
-				toParse, _ := ioutil.ReadDir(handbookDir)
-				for _, tempFile := range toParse {
-					templateBase := filepath.Join(handbookDir, tempFile.Name())
-					fmt.Printf("- Parsing %s\n", templateBase)
-
-					t, _ := template.ParseFiles(templateBase)
-					var b bytes.Buffer
-					_ = t.Execute(&b, temp)
-
-					re := regexp.MustCompile("<Key>(.*?)</Key>")
-					match := re.FindStringSubmatch(b.String())
-					filename := tempFile.Name()
-					if len(match) >= 1 {
-						filename = match[1] + ".xml"
-					}
-
-					outputFile := filepath.Join(outputDir, filename)
-					util.WriteStringToFile(outputFile, b.String())
-				}
+				currentHandbook := strings.Split(
+					strings.Split(langFileInfo.Name(), "-")[1],
+					".")[0]
+				handbook := filepath.Join(handbookBase, currentHandbook)
+				templates := filepath.Join(templateDir, "Handbook", currentHandbook)
+				createHandbookFiles(file, handbook, langCode, templates)
 			} else if langFileInfo.Name() == "master.xml" {
-				fmt.Println("Changing the first two nodes of " + file)
-				doc := etree.NewDocument()
-				if err := doc.ReadFromFile(file); err != nil {
-					panic(err)
-				}
-				newDoc := etree.NewDocument()
-				doc.CreateProcInst("xml", `version="1.0" encoding="UTF-8"`)
-				newTag := newDoc.CreateElement("languages")
-				for _, parent := range doc.ChildElements() {
-					parent.Tag = langCode
-					newTag.AddChild(parent)
-				}
-				outputDir := filepath.Join(createOut, "master", langCode)
-				os.MkdirAll(outputDir, os.ModePerm)
-				outputFile := filepath.Join(outputDir, "master.xml")
-				newDoc.WriteToFile(outputFile)
+				createMasterFile(file, langCode, langBase)
 			}
 		}
 	}
 }
 
-func validInputCreate() bool {
-	fileInf, err := os.Stat(translationDir)
-	if err != nil {
-		return false
-	}
-	if !fileInf.IsDir() {
-		return false
-	}
-	if fileInf.Name() != "res" {
-		return false
+func createHandbookFiles(file, handbook, language, templates string) {
+	//Handbook
+	_, data := util.ParseXLFMap(file)
+	temp := mapp{Data: data}
+
+	var outputDir string
+	if language == "english" {
+		outputDir = handbook
+	} else {
+		outputDir = filepath.Join(handbook, language)
 	}
 
-	fileInf, err = os.Stat(templateDir)
-	if err != nil {
-		return false
+	fmt.Printf("        Creating Directory if not existent: %s\n", outputDir)
+	os.MkdirAll(outputDir, os.ModePerm)
+	toParse, _ := ioutil.ReadDir(templates)
+	for _, tempFile := range toParse {
+		templateBase := filepath.Join(templates, tempFile.Name())
+		fmt.Printf("- Parsing %s\n", templateBase)
+
+		t, _ := template.ParseFiles(templateBase)
+		var b bytes.Buffer
+		_ = t.Execute(&b, temp)
+
+		re := regexp.MustCompile("<Key>(.*?)</Key>")
+		match := re.FindStringSubmatch(b.String())
+		filename := tempFile.Name()
+		if len(match) >= 1 {
+			filename = match[1] + ".xml"
+		}
+
+		outputFile := filepath.Join(outputDir, filename)
+		util.WriteStringToFile(outputFile, b.String())
 	}
-	if !fileInf.IsDir() {
-		return false
+}
+
+func createMasterFile(file, language, out string) {
+	fmt.Println("Changing the first two nodes of " + file)
+	doc := etree.NewDocument()
+	if err := doc.ReadFromFile(file); err != nil {
+		panic(err)
 	}
-	if fileInf.Name() != templates {
-		return false
+	newDoc := etree.NewDocument()
+	doc.CreateProcInst("xml", `version="1.0" encoding="UTF-8"`)
+	newTag := newDoc.CreateElement("languages")
+	for _, parent := range doc.ChildElements() {
+		parent.Tag = language
+		newTag.AddChild(parent)
 	}
-	return true
+	var filename string
+	if language == "english" {
+		filename = "master_language_data.xml"
+	} else {
+		filename = "language_data_" + language + ".xml"
+	}
+	os.MkdirAll(out, os.ModePerm)
+	outputFile := filepath.Join(out, filename)
+	newDoc.WriteToFile(outputFile)
 }

@@ -31,24 +31,10 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"github.com/Fjolnir-Dvorak/fcHelper/cmd/game/structures"
 )
 
 const (
-	handbook  = "64/Default/Handbook"
-	out       = "fc_out"
-	templates = "templates"
-
-	// Base structure and keywords for handbook
-	av     = "AvailableResearch"
-	av_key = "AV"
-	co     = "CompletedResearch"
-	co_key = "CO"
-	cr     = "Creative"
-	cr_key = "CR"
-	ma     = "Materials"
-	ma_key = "MA"
-	su     = "Survival"
-	su_key = "SU"
 
 	// Keywords to extract
 	title     = "Title"
@@ -69,53 +55,27 @@ const (
 
 var (
 	keywords        = [...]string{title, header, paragraph, left, right}
-	gameDir         string
-	destination     string
-	createTemplates bool
-	language        string
+	Out     string
+	NoTemplate bool
+	Lang        string
 )
 
-// extractCmd represents the extract command
-var extractCmd = &cobra.Command{
-	Use:   "extract",
-	Short: "Extracts strings to localize..",
-	Long: `Extracts strings out of the handbook which needs to be localized.
-	Those Keys will be stored in an Android-xml language files.
-	It also is able to generate createTemplates-files which will be used to reinject
-	the translated keys back into the xml.`,
-	Run: doExtract,
-}
 
 func init() {
-	GameCMD.AddCommand(extractCmd)
-	extractCmd.Flags().StringVarP(&gameDir, "gameDir", "g", "", "Directory containing FortressCraft Evolved.")
-	extractCmd.Flags().StringVarP(&destination, "destination", "d", out, "Destination Directory to create the parsed files.")
-	extractCmd.Flags().StringVarP(&language, "language", "l", "", "Used language shortkey.")
-	extractCmd.Flags().BoolVarP(&createTemplates, "createTemplates", "t", false, "Wether to generate xml-templates.")
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// extractCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// extractCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-
 }
 
 func doExtract(cmd *cobra.Command, args []string) {
-	destDir := destination
-	if createTemplates {
+	destDir := Out
+	// Ensure the template base directory is exsisting
+	if NoTemplate == false {
 		destDir = filepath.Join(destination, templates, "Handbook")
 	}
 	_ = os.MkdirAll(destDir, os.ModePerm)
-	createExtract(av, av_key, destDir)
-	createExtract(co, co_key, destDir)
-	createExtract(cr, cr_key, destDir)
-	createExtract(ma, ma_key, destDir)
-	createExtract(su, su_key, destDir)
+	createExtract(structures.Av, structures.Av_key, destDir)
+	createExtract(structures.Co, structures.Co_key, destDir)
+	createExtract(structures.Cr, structures.Cr_key, destDir)
+	createExtract(structures.Ma, structures.Ma_key, destDir)
+	createExtract(structures.Su, structures.Su_key, destDir)
 
 }
 

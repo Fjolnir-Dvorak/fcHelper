@@ -21,16 +21,30 @@
 package game
 
 import (
-	"github.com/spf13/cobra"
-	"path/filepath"
+	"golang.org/x/sys/windows/registry"
 )
 
 // generateCmd represents the generate command
 var (
+	SteamGameDir string
 	GameDir  string
 	NoConfig bool
 )
 
 func Init() {
+	// Gets the game directory from Steam
+	key, err := registry.OpenKey(registry.LOCAL_MACHINE,
+		`SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Steam App 254200`,
+		registry.QUERY_VALUE)
+	if err != nil {
+		// TODO handle the error
+	}
+	defer key.Close()
+
+	installLoction, _, err := key.GetStringValue("InstallLocation")
+	if err != nil {
+		// TODO handle the error as above
+	}
+	SteamGameDir = installLoction
 
 }
