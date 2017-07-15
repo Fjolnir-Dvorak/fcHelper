@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"github.com/Fjolnir-Dvorak/fcHelper/cmd/game"
+	"github.com/Fjolnir-Dvorak/fcHelper/cmd/generate"
+	"github.com/Fjolnir-Dvorak/fcHelper/cmd/xml"
 	"github.com/spf13/cobra"
 )
 
@@ -64,21 +66,25 @@ var (
 		Long: `Generates the bash completion. The system location to save these
 			into is '/etc/bash_completion.d/'. If you made a user specific
 			folder for completions you could also save this script in there.`,
+		Run: generate.DoCompletion,
 	}
 	GenerateManCMD = &cobra.Command{
 		Use:   "man",
 		Short: "Generates a manual for this program",
 		Long:  `Man which can be used as manpage.`,
+		Run:   generate.DoMan,
 	}
 	GenerateMarkdownCMD = &cobra.Command{
 		Use:   "markdown",
 		Short: "Generates a markdown manual for this program",
 		Long:  `Man written in markdown.`,
+		Run:   generate.DoMarkdown,
 	}
 	GenerateYamlCMD = &cobra.Command{
 		Use:   "yaml",
 		Short: "Generates a yaml structure for this program",
 		Long:  `Structure file.`,
+		Run:   generate.DoYaml,
 	}
 	XmlClearCMD = &cobra.Command{
 		Use:   "clear",
@@ -86,6 +92,7 @@ var (
 		Long: `If you do not know what you are doing exactly do not use this functionality.
 			It is able to corrupt your whole game and to destroy your savegames. Do not ask
 			me how, but I am shure there is a possibility for that.`,
+		Run: xml.DoClearXML,
 	}
 	XmlCompareCMD = &cobra.Command{
 		Use:   "compare",
@@ -95,6 +102,7 @@ var (
 	 		in second file) with '+++' in front and the surplus (keys in first file) with '---'
 	 		in front. If the comparison file will be applied to the base file it will have the
 	 		same key structure as the second one.`,
+		Run: xml.DoCompare,
 	}
 	XmlDuplicatesCMD = &cobra.Command{
 		Use:   "duplicates",
@@ -102,6 +110,7 @@ var (
 		Long: `Searches through a single file and auto-deletes all duplicate keys where the
 			value is identical. On different values the user will be asked which value should
 			be deleted.`,
+		Run: xml.DoDuplicate,
 	}
 	ConfigExportCMD = &cobra.Command{
 		Use:   "export",
@@ -147,14 +156,14 @@ func initCMD() {
 
 	// TODO define output key
 
-	ConfigCMD.AddCommand(ConfigExportCMD)
-	ConfigCMD.AddCommand(ConfigImportCMD)
-
-	ConfigExportCMD.Flags().BoolVarP(&config.Full, "full", "f", false, "Exports the config containing all default keys.")
-	ConfigExportCMD.Flags().BoolVarP(&config.Default, "default", "d", false, "Creates a config file with the programmed defaults.")
-	ConfigExportCMD.Flags().BoolVarP(&config.Overwrite, "overwrite", "w", false, "Overwrites the programm config with the generated config file.")
-	ConfigExportCMD.Flags().StringVarP(&config.Out, "out", "o", "", "Specifies the output channel. Default is STDOut.")
-
-	ConfigImportCMD.Flags().BoolVarP(&config.IgnoreDef, "ignoreDef", "i", false, "Does not impoort keys specified with the default value.")
+	//ConfigCMD.AddCommand(ConfigExportCMD)
+	//ConfigCMD.AddCommand(ConfigImportCMD)
+	//
+	//ConfigExportCMD.Flags().BoolVarP(&config.Full, "full", "f", false, "Exports the config containing all default keys.")
+	//ConfigExportCMD.Flags().BoolVarP(&config.Default, "default", "d", false, "Creates a config file with the programmed defaults.")
+	//ConfigExportCMD.Flags().BoolVarP(&config.Overwrite, "overwrite", "w", false, "Overwrites the programm config with the generated config file.")
+	//ConfigExportCMD.Flags().StringVarP(&config.Out, "out", "o", "", "Specifies the output channel. Default is STDOut.")
+	//
+	//ConfigImportCMD.Flags().BoolVarP(&config.IgnoreDef, "ignoreDef", "i", false, "Does not impoort keys specified with the default value.")
 
 }

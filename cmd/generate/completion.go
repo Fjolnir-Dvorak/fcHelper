@@ -22,29 +22,19 @@ package generate
 
 import (
 	"github.com/spf13/cobra"
+	"os"
+	"path/filepath"
 )
 
 var (
-	defaultCompletion = ""
+	defaultCompletion  = "_fcHelper.sh"
 )
 
-// completionCmd represents the completion command
-var completionCmd = &cobra.Command{
-	Use:   "completion",
-	Short: "Generate bash completion",
-	Long: `
-Generates the bash completion. The system location to save these
-into is '/etc/bash_completion.d/'. If you made a user specific
-folder for completions you could also save this script in there.`,
-	Run: doCompletion,
-}
-
-func doCompletion(cmd *cobra.Command, args []string) {
-	_ = cmd.Root().GenBashCompletionFile(defaultCompletion)
+func DoCompletion(cmd *cobra.Command, args []string) {
+	os.MkdirAll(defaultGenerateDir, os.ModePerm)
+	file := filepath.Join(defaultGenerateDir, defaultCompletion)
+	_ = cmd.Root().GenBashCompletionFile(file)
 }
 
 func init() {
-	GenerateCmd.AddCommand(completionCmd)
-	completionCmd.Flags().StringVarP(&defaultCompletion, "destination", "d",
-		defaultCompletion, "Output location and file name.")
 }

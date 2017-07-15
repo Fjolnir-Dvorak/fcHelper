@@ -24,27 +24,20 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/cobra/doc"
 	"os"
+	"path/filepath"
 )
 
 var (
-	defaultMarkdown = ""
+	defaultMarkdown = "markdown"
 )
 
-// manCmd represents the man command
-var markdownCmd = &cobra.Command{
-	Use:   "markdown",
-	Short: "Generates a markdown manual for this program",
-	Long:  `Man written in markdown.`,
-	Run:   doMarkdown,
-}
+func DoMarkdown(cmd *cobra.Command, args []string) {
+	os.MkdirAll(defaultGenerateDir, os.ModePerm)
+	dir := filepath.Join(defaultGenerateDir, defaultMarkdown)
 
-func doMarkdown(cmd *cobra.Command, args []string) {
-	os.Mkdir(defaultMarkdown, os.ModePerm)
-	doc.GenMarkdownTree(cmd.Root(), defaultMarkdown)
+	os.Mkdir(dir, os.ModePerm)
+	doc.GenMarkdownTree(cmd.Root(), dir)
 }
 
 func init() {
-	GenerateCmd.AddCommand(markdownCmd)
-	markdownCmd.Flags().StringVarP(&defaultMarkdown, "destination", "d",
-		defaultMarkdown, "Output location.")
 }

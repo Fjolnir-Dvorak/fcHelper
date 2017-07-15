@@ -3,7 +3,6 @@ package game
 import (
 	"bytes"
 	"fmt"
-	cmd2 "github.com/Fjolnir-Dvorak/fcHelper/cmd"
 	"github.com/Fjolnir-Dvorak/fcHelper/cmd/game/structures"
 	"github.com/Fjolnir-Dvorak/fcHelper/util"
 	"github.com/beevik/etree"
@@ -15,6 +14,7 @@ import (
 	"regexp"
 	"strings"
 	"text/template"
+	"github.com/Fjolnir-Dvorak/fcHelper/shared"
 )
 
 var (
@@ -86,8 +86,8 @@ func DoCreate(cmd *cobra.Command, args []string) {
 	var repoDir string
 	var valid bool
 	if TransProject == "" {
-		_ = UpdateGit(cmd2.Environ.DataLocal(), structures.GitName)
-		repoDir = filepath.Join(cmd2.Environ.DataLocal(), structures.GitName)
+		_ = UpdateGit(shared.Environ.DataLocal(), structures.GitName)
+		repoDir = filepath.Join(shared.Environ.DataLocal(), structures.GitName)
 		valid = ValidateProject(repoDir)
 	} else {
 		valid = ValidateProject(TransProject)

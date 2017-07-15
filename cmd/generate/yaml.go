@@ -24,27 +24,20 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/cobra/doc"
 	"os"
+	"path/filepath"
 )
 
 var (
-	defaultYaml = ""
+	defaultYaml = "yaml"
 )
 
-// manCmd represents the man command
-var yamlCmd = &cobra.Command{
-	Use:   "yaml",
-	Short: "Generates a yaml structure for this program",
-	Long:  `Structure file.`,
-	Run:   doYaml,
-}
+func DoYaml(cmd *cobra.Command, args []string) {
+	os.MkdirAll(defaultGenerateDir, os.ModePerm)
+	dir := filepath.Join(defaultGenerateDir, defaultYaml)
 
-func doYaml(cmd *cobra.Command, args []string) {
-	os.Mkdir(defaultYaml, os.ModePerm)
-	doc.GenYamlTree(cmd.Root(), defaultYaml)
+	os.Mkdir(dir, os.ModePerm)
+	doc.GenYamlTree(cmd.Root(), dir)
 }
 
 func init() {
-	GenerateCmd.AddCommand(yamlCmd)
-	yamlCmd.Flags().StringVarP(&defaultYaml, "destination", "d",
-		defaultYaml, "Output location.")
 }

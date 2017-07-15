@@ -24,27 +24,20 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/cobra/doc"
 	"os"
+	"path/filepath"
 )
 
 var (
-	defaultMan = ""
+	defaultMan = "man"
 )
 
-// manCmd represents the man command
-var manCmd = &cobra.Command{
-	Use:   "man",
-	Short: "Generates a manual for this program",
-	Long:  `Man which can be used as manpage.`,
-	Run:   doMan,
-}
+func DoMan(cmd *cobra.Command, args []string) {
+	os.MkdirAll(defaultGenerateDir, os.ModePerm)
+	dir := filepath.Join(defaultGenerateDir, defaultMan)
 
-func doMan(cmd *cobra.Command, args []string) {
-	os.Mkdir(defaultMan, os.ModePerm)
-	doc.GenManTree(cmd.Root(), &doc.GenManHeader{Title: "fcHelper", Section: "man"}, defaultMan)
+	os.Mkdir(dir, os.ModePerm)
+	doc.GenManTree(cmd.Root(), &doc.GenManHeader{Title: "fcHelper", Section: "man"}, dir)
 }
 
 func init() {
-	GenerateCmd.AddCommand(manCmd)
-	manCmd.Flags().StringVarP(&defaultMan, "destination", "d",
-		defaultMan, "Output location.")
 }

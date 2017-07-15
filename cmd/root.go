@@ -31,6 +31,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"path/filepath"
+	"github.com/Fjolnir-Dvorak/fcHelper/shared"
 )
 
 const (
@@ -41,7 +42,6 @@ const (
 
 var (
 	cfgFile string
-	Environ environ.Environ
 	defaultConf string
 )
 
@@ -56,11 +56,11 @@ func Execute() {
 }
 
 func init() {
-	Environ = environ.New(VendorName, ApplicationName)
-	Environ.EnsureExistence(environ.ConfigLocal)
+	shared.Environ = environ.New(VendorName, ApplicationName)
+	shared.Environ.EnsureExistence(environ.ConfigLocal)
 
 	cobra.OnInitialize(initConfig)
-	defaultConf = filepath.Join(Environ.VarConfigLocal(), DefaultConf)
+	defaultConf = filepath.Join(shared.Environ.VarConfigLocal(), DefaultConf)
 	initCMD()
 	generate.Init()
 	game.Init()
@@ -74,7 +74,7 @@ func initConfig() {
 	}
 
 	viper.SetConfigName(DefaultConf)           // name of config file (without extension)
-	viper.AddConfigPath(Environ.ConfigLocal()) // adding system config directory as first search path
+	viper.AddConfigPath(shared.Environ.ConfigLocal()) // adding system config directory as first search path
 	viper.SafeWriteConfig()
 	viper.AutomaticEnv() // read in environment variables that match
 

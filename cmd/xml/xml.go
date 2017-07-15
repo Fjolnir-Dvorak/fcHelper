@@ -20,16 +20,7 @@
 
 package xml
 
-import (
-	"github.com/spf13/cobra"
-)
-
-var XmlCmd = &cobra.Command{
-	Use:   "xml",
-	Short: "General XML utilities.",
-	Long: `Please specify a subcommand .
-	`,
-}
+import ()
 
 const (
 	out = "fc_out"

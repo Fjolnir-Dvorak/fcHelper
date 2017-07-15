@@ -9,18 +9,6 @@ import (
 	"path/filepath"
 )
 
-// extractCmd represents the extract command
-var compareCmd = &cobra.Command{
-	Use:   "compare",
-	Short: "Compares two language xmls and extracts all different (obsolete/ keys.",
-	Long: `Compares two different files or two different directory-trees with the same
-	 structure. It will generate a file for each comparison showing missing keys (keys
-	 in second file) with '+++' in front and the surplus (keys in first file) with '---'
-	 in front. If the comparison file will be applied to the base file it will have the
-	 same key structure as the second one.`,
-	Run: doCompare,
-}
-
 var (
 	compOld string
 	compNew string
@@ -28,24 +16,20 @@ var (
 )
 
 func init() {
-	XmlCmd.AddCommand(compareCmd)
-	compareCmd.Flags().StringVarP(&compOld, "base", "b", "", "Old xml version.")
-	compareCmd.Flags().StringVarP(&compNew, "new", "n", "", "New xml version.")
-	compareCmd.Flags().StringVarP(&compOut, "out", "o", out, "Output directory")
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// extractCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// extractCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-
 }
 
-func doCompare(cmd *cobra.Command, args []string) {
+func DoCompare(cmd *cobra.Command, args []string) {
+	if len(args) == 0 {
+		fmt.Println("ERROR: No input file given.")
+		return
+	}
+	if len(args) != 2 {
+		fmt.Println("ERROR: Please specify two files for comparison")
+		return
+	}
+	compOld = args[0]
+	compNew = args[1]
+
 	// Load both files
 	_, old := util.ParseXLFKeyName(compOld)
 	_, new := util.ParseXLFKeyName(compNew)

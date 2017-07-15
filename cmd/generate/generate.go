@@ -20,16 +20,11 @@
 
 package generate
 
-import (
-	"github.com/spf13/cobra"
-)
+import ()
 
-// This command
-var GenerateCmd = &cobra.Command{
-	Use:   "generate",
-	Short: "Manipulates or generates game files.",
-	Long:  `Please specify a subcommand for gamefile manipulation.`,
-}
+var (
+	defaultGenerateDir = "fc_out"
+)
 
 func Init() {
 }
