@@ -1,17 +1,18 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using DotLiquid;
+using LibGit2Sharp;
+using Microsoft.Win32;
+using Microsoft.WindowsAPICodePack.Dialogs;
+using MouseEventArgs = System.Windows.Input.MouseEventArgs;
 
 namespace fcHelper
 {
@@ -20,9 +21,309 @@ namespace fcHelper
     /// </summary>
     public partial class MainWindow : Window
     {
+        private String installPath = null;
+        private String gitPath = null;
+        private bool closeOnButton = false;
+        private const String GITNAME = "Fortress-Craft-Evolved-Translation";
+
         public MainWindow()
         {
             InitializeComponent();
+        }
+
+        private void XAutodetectPath(object sender, RoutedEventArgs e)
+        {
+            String gamepath = (string) Registry.LocalMachine
+                                  .OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Steam App 254200\")
+                                  ?.GetValue("InstallLocation", "") ?? "";
+            this.xInstallPath.Text = gamepath;
+            this.installPath = gamepath;
+            this.validateForNextButton();
+        }
+
+        private void XSelectPath(object sender, RoutedEventArgs e)
+        {
+            var cofd = new CommonOpenFileDialog
+            {
+                IsFolderPicker = true,
+                Title = "Installation Directory of FortressCraft Evolved"
+            };
+            var result = cofd.ShowDialog();
+            if (result == CommonFileDialogResult.Ok)
+            {
+                this.xInstallPath.Text = cofd.FileName;
+                this.installPath = cofd.FileName;
+            }
+
+            this.validateForNextButton();
+        }
+        private void XSelectGitPath(object sender, RoutedEventArgs e)
+        {
+            var cofd = new CommonOpenFileDialog
+            {
+                IsFolderPicker = true,
+                Title = "Installation Directory of FortressCraft Evolved"
+            };
+            var result = cofd.ShowDialog();
+            if (result == CommonFileDialogResult.Ok)
+            {
+                this.xGitPath.Text = cofd.FileName;
+                this.gitPath = cofd.FileName;
+            }
+
+            this.validateForNextButton();
+        }
+
+        private void XMouseEnter(object sender, MouseEventArgs e)
+        {
+            // if (this.installPath != null && this.gitPath != null)
+            //     this.xNext.Visibility = Visibility.Visible;
+        }
+
+        private void XMouseLeave(object sender, MouseEventArgs e)
+        {
+            // this.xNext.Visibility = Visibility.Hidden;
+        }
+
+        private void XNext_OnClick(object sender, RoutedEventArgs e)
+        {
+            if (this.closeOnButton == true)
+            {
+                Application.Current.Shutdown();
+                return;
+            }
+            bool doEnglish = xGenEnglish.IsChecked ?? false;
+            // Get the default language:
+            string def = (string) this.xDefaultLanguageSelect.SelectedItem;
+
+            DirectoryInfo languagePath = new DirectoryInfo(Path.Combine(this.gitPath, GITNAME, "res"));
+            var templatePath = new DirectoryInfo(Path.Combine(this.gitPath, GITNAME, "templates", "Handbook"));
+            DirectoryInfo gameHandbookPath = new DirectoryInfo(Path.Combine(this.installPath, "64", "Default", "Handbook"));
+            DirectoryInfo gameMasterLangPath = new DirectoryInfo(Path.Combine(this.installPath, "64", "Default", "Lang"));
+            string masterLangName = "language_data_{0}.xml";
+
+            ConcurrentDictionary<string, ConcurrentDictionary<string, Template>> templateCollection =
+                XmlParser.ReadAllHandbooks(templatePath);
+
+            var languageList = languagePath.GetDirectories();
+            string defaultLang = (string) this.xDefaultLanguageSelect.SelectedItem;
+            //foreach (var singleLangDir in languageList)
+            Parallel.ForEach(languageList, singleLangDir =>
+            {
+                var name = singleLangDir.Name;
+                if (name.StartsWith("values-") && name.Length >= 8)
+                {
+                    var langCode = name.Substring(7);
+                    var langName = LanguageHelper.getLanguageName(langCode);
+                    if (langName == null)
+                    {
+                        Debug.WriteLine("ERROR: Language does not exist: " + langCode);
+                        Application.Current.Shutdown();
+                        return;
+                    }
+
+                    bool isDefault = langCode.Equals(defaultLang);
+
+                    //foreach (var singleHandbook in templateCollection)
+                    Parallel.ForEach(templateCollection, singleHandbook =>
+                    {
+                        doingHandbookStuff(langName, singleHandbook.Key, singleHandbook.Value, singleLangDir, gameHandbookPath, isDefault);
+                    });
+                    doingMasterfileRepairation(langName, singleLangDir, gameMasterLangPath, masterLangName, isDefault);
+                } else if (name.Equals("values"))
+                {
+                    Parallel.ForEach(templateCollection, singleHandbook =>
+                    {
+                        doingHandbookStuff(null, singleHandbook.Key, singleHandbook.Value, singleLangDir, gameHandbookPath, false);
+                    });
+                    doingMasterfileRepairation(null, singleLangDir, gameMasterLangPath, null, false);
+                }
+                else
+                {
+                    // Invalid directory...
+                }
+            });
+            this.closeOnButton = true;
+            this.xNext.Content = "Close";
+        }
+
+        private static void doingMasterfileRepairation(string langName, DirectoryInfo singleLangDir, DirectoryInfo gameMasterLangPath, string masterLangName, bool isDefault)
+        {
+            langName = langName ?? "english";
+            var tmpFilePath = singleLangDir.FullName;
+            var tmpFileName = "master.xml";
+            Debug.WriteLine(langName + "::" + tmpFileName);
+            var fileInfo = new FileInfo(Path.Combine(tmpFilePath, tmpFileName));
+            if (!fileInfo.Exists)
+            {
+                Debug.WriteLine("::WARN:: " + langName + " has no MasterFile.");
+                return;
+            }
+            Directory.CreateDirectory(gameMasterLangPath.FullName);
+            var fileContent = XmlParser.correctMasterTree(fileInfo);
+            if (langName.Equals("english"))
+            {
+                File.WriteAllText(Path.Combine(gameMasterLangPath.FullName,
+                    "master_language_data.xml"), fileContent);
+            }
+            else
+            {
+                File.WriteAllText(Path.Combine(gameMasterLangPath.FullName,
+                    String.Format(masterLangName, langName)), fileContent);
+                if (isDefault)
+                {
+                    File.WriteAllText(Path.Combine(gameMasterLangPath.FullName,
+                        String.Format(masterLangName, "testlang")), fileContent);
+                }
+            }
+        }
+
+        private static void doingHandbookStuff(string langName, string handbook, ConcurrentDictionary<string, Template> templates, DirectoryInfo singleLangDir, DirectoryInfo gameHandbookPath, bool isDefault)
+        {
+            langName = langName ?? "english";
+            var tmpFilePath = singleLangDir.FullName;
+            var tmpFileName = "handbook-" + handbook + ".xml";
+            Debug.WriteLine(langName + "::" + tmpFileName);
+            var fileInfo = new FileInfo(Path.Combine(tmpFilePath, tmpFileName));
+            if (!fileInfo.Exists)
+            {
+                Debug.WriteLine("::WARN:: " + langName + " has no " + handbook + ".");
+                return;
+            }
+            var masterfile = fileInfo;
+            string goalLanguageDir;
+            if (langName.Equals("english"))
+            {
+                goalLanguageDir = gameHandbookPath.CreateSubdirectory(handbook).FullName;
+            }
+            else
+            {
+                goalLanguageDir = gameHandbookPath.CreateSubdirectory(Path.Combine(handbook, langName)).FullName;
+            }
+            var dict = XmlParser.Read(masterfile);
+            //<Filename, Content>
+            ConcurrentDictionary<string, string> parsedCollection = XmlParser.ParseTemplates(templates, dict);
+
+            if (isDefault)
+            {
+                var defaultLanguageDir =
+                    gameHandbookPath.CreateSubdirectory(Path.Combine(handbook, "testlang")).FullName;
+                foreach (KeyValuePair<string, string> singleParsed in parsedCollection)
+                {
+                    var filename = singleParsed.Key;
+                    var content = singleParsed.Value;
+                    File.WriteAllText(Path.Combine(goalLanguageDir, filename), content, Encoding.UTF8);
+                    File.WriteAllText(Path.Combine(defaultLanguageDir, filename), content, Encoding.UTF8);
+                }
+            }
+            else
+            {
+                foreach (KeyValuePair<string, string> singleParsed in parsedCollection)
+                {
+                    var filename = singleParsed.Key;
+                    var content = singleParsed.Value;
+                    File.WriteAllText(Path.Combine(goalLanguageDir, filename), content, Encoding.UTF8);
+                }
+            }
+
+        }
+
+        private void XUseLocalAppData(object sender, RoutedEventArgs e)
+        {
+            var gitPath = Path.Combine(Environment.GetFolderPath(System.Environment.SpecialFolder.LocalApplicationData),
+                "FjolnirDvorak",
+                "fcHelper");
+            this.xGitPath.Text = gitPath;
+            this.gitUpdateOrInit(gitPath);
+
+            var languagePath = Path.Combine(gitPath, GITNAME, "res");
+            if (Directory.Exists(languagePath))
+            {
+                Debug.WriteLine("Directory exists.");
+                List<String> langCodes = new List<String>();
+                var subDirs = new DirectoryInfo(languagePath).GetDirectories();
+                Debug.WriteLine("Found " + subDirs.Length + " potential languages");
+                this.xDefaultLanguageSelect.Items.Clear();
+                foreach (var subDir in subDirs)
+                {
+                    var name = subDir.Name;
+                    Debug.WriteLine("Validating directory: " + name);
+                    if (name.StartsWith("values-") && name.Length >= 8)
+                    {
+                        var langCode = name.Substring(7);
+                        Debug.WriteLine("And I am adding an element to the dropdown menu: " + langCode);
+                        langCodes.Add(langCode);
+                        this.xDefaultLanguageSelect.Items.Add(langCode);
+                    }
+                }
+                this.xDefaultLanguageSelect.UpdateLayout();
+                this.gitPath = gitPath;
+            }
+            this.validateForNextButton();
+        }
+
+        private void gitUpdateOrInit(string gitPath)
+        {
+            var path = Path.Combine(gitPath, GITNAME);
+            if (!Directory.Exists(path))
+            {
+                LibGit2Sharp.CloneOptions co = new CloneOptions();
+                co.BranchName = "weblate-master";
+                LibGit2Sharp.Repository.Clone("https://github.com/zebra1993/Fortress-Craft-Evolved-Translation.git",
+                    path);
+            }
+            
+            using (var repo = new Repository(path))
+            {
+                if (false)
+                {
+                    if (repo.Head != repo.Branches["origin/weblate-master"])
+                    {
+                        var localBranch = repo.Branches["origin/weblate-master"];
+                        if (localBranch == null)
+                        {
+                            foreach (var repoBranch in repo.Branches)
+                            {
+                                Debug.WriteLine(repoBranch.IsRemote + " | " + repoBranch.FriendlyName + " | " + repoBranch.RemoteName);
+                            }
+                            Application.Current.Shutdown();
+                            return;
+                        }
+
+                        LibGit2Sharp.CheckoutOptions cm = new CheckoutOptions();
+                        cm.CheckoutModifiers = CheckoutModifiers.Force;
+                        LibGit2Sharp.Commands.Checkout(repo, localBranch, cm);
+                    }
+                    LibGit2Sharp.PullOptions options = new LibGit2Sharp.PullOptions();
+                    options.FetchOptions = new FetchOptions();
+                    options.MergeOptions = new MergeOptions();
+                    options.MergeOptions.FastForwardStrategy = FastForwardStrategy.FastForwardOnly;
+                    options.MergeOptions.FileConflictStrategy = CheckoutFileConflictStrategy.Theirs;
+                    options.MergeOptions.MergeFileFavor = MergeFileFavor.Theirs;
+                    LibGit2Sharp.Commands.Pull(repo, new Signature("fcHelper", "fcHelper@demo.com", new DateTimeOffset(DateTime.Now)), options);
+                }
+                FetchOptions fOptions = new FetchOptions();
+                string logMessage = "";
+                foreach (Remote remote in repo.Network.Remotes)
+                {
+                    IEnumerable<string> refSpecs = remote.FetchRefSpecs.Select(x => x.Specification);
+                    Commands.Fetch(repo, remote.Name, refSpecs, null, logMessage);
+                }
+                Debug.WriteLine(logMessage);
+                repo.Reset(ResetMode.Hard, repo.Branches["origin/weblate-master"].Tip);
+            }
+            
+        }
+
+        private void validateForNextButton()
+        {
+            if (this.installPath != null && this.gitPath != null && this.xDefaultLanguageSelect.SelectedItem != null)
+                this.xNext.Visibility = Visibility.Visible;
+        }
+
+        private void XDefaultLanguageSelect_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            this.validateForNextButton();
         }
     }
 }
