@@ -9,169 +9,52 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="350" Width="525">
     <Grid>
-        <extToolkit:WatermarkTextBox IsReadOnly="True" HorizontalAlignment="Left" Height="23" Margin="279,57,0,0" TextWrapping="NoWrap" Watermark="Git: Translation Path" VerticalAlignment="Top" Width="150" RenderTransformOrigin="0.487,0.407" x:Name="xGitPath">
-            <extToolkit:WatermarkTextBox.RenderTransform>
-                <TransformGroup>
-                    <ScaleTransform/>
-                    <SkewTransform/>
-                    <RotateTransform Angle="384.447"/>
-                    <TranslateTransform X="2.924" Y="4.864"/>
-                </TransformGroup>
-            </extToolkit:WatermarkTextBox.RenderTransform>
-        </extToolkit:WatermarkTextBox>
-        <Button Content="Use Default
-                " HorizontalAlignment="Left" Margin="337,106,0,0" VerticalAlignment="Top" Width="75" Click="XUseLocalAppData" ToolTip="Ich bin ein Tooltip" RenderTransformOrigin="0.5,0.5">
-            <Button.RenderTransform>
-                <TransformGroup>
-                    <ScaleTransform/>
-                    <SkewTransform/>
-                    <RotateTransform Angle="21.187"/>
-                    <TranslateTransform/>
-                </TransformGroup>
-            </Button.RenderTransform>
-        </Button>
-        <Button IsEnabled="False" Content="Select Folder" HorizontalAlignment="Left" Margin="266,101,0,0" VerticalAlignment="Top" Width="75" Click="XSelectGitPath" RenderTransformOrigin="0.5,0.5">
-            <Button.RenderTransform>
-                <TransformGroup>
-                    <ScaleTransform/>
-                    <SkewTransform/>
-                    <RotateTransform Angle="-56.913"/>
-                    <TranslateTransform/>
-                </TransformGroup>
-            </Button.RenderTransform>
-        </Button>
-        <extToolkit:WatermarkTextBox IsReadOnly="True" HorizontalAlignment="Left" Height="23" Margin="35,38,0,0" TextWrapping="NoWrap" Watermark="Installation path" VerticalAlignment="Top" Width="150" RenderTransformOrigin="0.5,0.5" x:Name="xInstallPath">
-            <extToolkit:WatermarkTextBox.RenderTransform>
-                <TransformGroup>
-                    <ScaleTransform/>
-                    <SkewTransform/>
-                    <RotateTransform Angle="-4.124"/>
-                    <TranslateTransform/>
-                </TransformGroup>
-            </extToolkit:WatermarkTextBox.RenderTransform>
-        </extToolkit:WatermarkTextBox>
-        <Button Content="Autodetect" HorizontalAlignment="Left" Margin="18,90,0,0" VerticalAlignment="Top" Width="75" Click="XAutodetectPath" ToolTip="Utilizes the Windows Registry to receive the installation path from FortressCraft Evolved." Height="21" RenderTransformOrigin="0.5,0.5">
-            <Button.RenderTransform>
-                <TransformGroup>
-                    <ScaleTransform/>
-                    <SkewTransform/>
-                    <RotateTransform Angle="-6.282"/>
-                    <TranslateTransform/>
-                </TransformGroup>
-            </Button.RenderTransform>
-        </Button>
-        <Button Content="Select Folder" HorizontalAlignment="Left" Margin="106,87,0,0" VerticalAlignment="Top" Width="75" Click="XSelectPath" RenderTransformOrigin="0.5,0.5" ToolTip="Please select the installation folder of FortressCraft evolved. Or let me search for it with the registry.">
-            <Button.RenderTransform>
-                <TransformGroup>
-                    <ScaleTransform/>
-                    <SkewTransform/>
-                    <RotateTransform Angle="33.304"/>
-                    <TranslateTransform/>
-                </TransformGroup>
-            </Button.RenderTransform>
-        </Button>
-        <Label Content="" HorizontalAlignment="Left" Margin="392,263,0,0" VerticalAlignment="Top" Height="40" Width="91" MouseEnter="XMouseEnter" MouseLeave="XMouseLeave" />
-        <Button Content="Next" Click="XNext_OnClick" HorizontalAlignment="Left" Margin="396,273,0,0" VerticalAlignment="Top" Width="74" RenderTransformOrigin="0.5,0.5" Height="22" common:VisibilityAnimation.AnimationType="Fade" x:Name="xNext" Visibility="Hidden">
-            <Button.RenderTransform>
-                <TransformGroup>
-                    <ScaleTransform/>
-                    <SkewTransform/>
-                    <RotateTransform Angle="8.789"/>
-                    <TranslateTransform/>
-                </TransformGroup>
-            </Button.RenderTransform>
-        </Button>
-        <Label Content="Pulling git repository from remote
-               " HorizontalAlignment="Left" Margin="7,164,0,0" VerticalAlignment="Top" Height="26" Width="190" RenderTransformOrigin="0.5,0.5" Foreground="#FF2938D1">
-            <Label.RenderTransform>
-                <TransformGroup>
-                    <ScaleTransform/>
-                    <SkewTransform/>
-                    <RotateTransform Angle="-25.236"/>
-                    <TranslateTransform/>
-                </TransformGroup>
-            </Label.RenderTransform>
-        </Label>
-        <Label Content="Updating git repository" HorizontalAlignment="Left" Margin="82,163,0,0" VerticalAlignment="Top" Foreground="#FF9C29D1" RenderTransformOrigin="0.5,0.5" >
-            <Label.RenderTransform>
-                <TransformGroup>
-                    <ScaleTransform/>
-                    <SkewTransform/>
-                    <RotateTransform Angle="11.919"/>
-                    <TranslateTransform/>
-                </TransformGroup>
-            </Label.RenderTransform>
-        </Label>
-        <Label Content="Checkout weblate-master" HorizontalAlignment="Left" Margin="277,159,0,0" VerticalAlignment="Top" Foreground="#FF910DAE" RenderTransformOrigin="0.5,0.5" Height="27" Width="146">
-            <Label.RenderTransform>
-                <TransformGroup>
-                    <ScaleTransform/>
-                    <SkewTransform/>
-                    <RotateTransform Angle="-11.499"/>
-                    <TranslateTransform/>
-                </TransformGroup>
-            </Label.RenderTransform>
-        </Label>
-        <Label Content="Deploy game data" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="300,154,0,0" Foreground="#FF3818C7" RenderTransformOrigin="0.5,0.5">
-            <Label.RenderTransform>
-                <TransformGroup>
-                    <ScaleTransform/>
-                    <SkewTransform/>
-                    <RotateTransform Angle="-41.012"/>
-                    <TranslateTransform/>
-                </TransformGroup>
-            </Label.RenderTransform>
-        </Label>
-        <Label Content="Parse git translation files" HorizontalAlignment="Left" Margin="144,148,0,0" VerticalAlignment="Top" Foreground="#FF3C269E" RenderTransformOrigin="0.5,0.5">
-            <Label.RenderTransform>
-                <TransformGroup>
-                    <ScaleTransform/>
-                    <SkewTransform/>
-                    <RotateTransform Angle="-7.071"/>
-                    <TranslateTransform/>
-                </TransformGroup>
-            </Label.RenderTransform>
-        </Label>
-        <Label Content="Apply translations to template" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="189,177,0,0" RenderTransformOrigin="0.5,0.5">
-            <Label.RenderTransform>
-                <TransformGroup>
-                    <ScaleTransform/>
-                    <SkewTransform/>
-                    <RotateTransform Angle="19.465"/>
-                    <TranslateTransform/>
-                </TransformGroup>
-            </Label.RenderTransform>
-        </Label>
-        <ComboBox x:Name="xDefaultLanguageSelect" SelectionChanged="XDefaultLanguageSelect_OnSelectionChanged" HorizontalAlignment="Left" Margin="71,279,0,0" VerticalAlignment="Top" Width="120" RenderTransformOrigin="0.5,0.5">
-            <ComboBox.RenderTransform>
-                <TransformGroup>
-                    <ScaleTransform/>
-                    <SkewTransform/>
-                    <RotateTransform Angle="5.907"/>
-                    <TranslateTransform/>
-                </TransformGroup>
-            </ComboBox.RenderTransform>
-        </ComboBox>
-        <Label Content="Default Language" HorizontalAlignment="Left" Margin="84,253,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.5,0.5" Foreground="#FF898989">
-            <Label.RenderTransform>
-                <TransformGroup>
-                    <ScaleTransform/>
-                    <SkewTransform/>
-                    <RotateTransform Angle="8.486"/>
-                    <TranslateTransform/>
-                </TransformGroup>
-            </Label.RenderTransform>
-        </Label>
-        <CheckBox x:Name="xGenEnglish" Content="Recreate english" HorizontalAlignment="Left" Margin="198,257,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.5,0.5">
-            <CheckBox.RenderTransform>
-                <TransformGroup>
-                    <ScaleTransform/>
-                    <SkewTransform/>
-                    <RotateTransform Angle="6.819"/>
-                    <TranslateTransform/>
-                </TransformGroup>
-            </CheckBox.RenderTransform>
-        </CheckBox>
-
+        <extToolkit:WatermarkTextBox IsReadOnly="True" HorizontalAlignment="Left" Height="23" Margin="278,38,0,0" TextWrapping="NoWrap" Watermark="Git: Translation Path" VerticalAlignment="Top"
+                                     Width="150" x:Name="xGitPath" />
+        <Button Content="Use Default" HorizontalAlignment="Left" Margin="278,70,0,0" VerticalAlignment="Top"
+                Width="75" Click="XUseLocalAppData" ToolTip="Ich bin ein Tooltip" RenderTransformOrigin="0.5,0.5" />
+        <Button IsEnabled="False" Content="Select Folder" HorizontalAlignment="Left" Margin="358,70,0,0" VerticalAlignment="Top"
+                Width="75" Click="XSelectGitPath" />
+        <extToolkit:WatermarkTextBox IsReadOnly="True" HorizontalAlignment="Left" Height="23" Margin="35,38,0,0" TextWrapping="NoWrap" Watermark="Installation path" VerticalAlignment="Top"
+                                     Width="150" x:Name="xInstallPath" />
+        <Button Content="Autodetect" HorizontalAlignment="Left" Margin="35,70,0,0" VerticalAlignment="Top"
+                Width="75" Click="XAutodetectPath" ToolTip="Utilizes the Windows Registry to receive the installation path from FortressCraft Evolved."/>
+        <Button Content="Select Folder" HorizontalAlignment="Left" Margin="115,70,0,0" VerticalAlignment="Top"
+                Width="75" Click="XSelectPath" ToolTip="Please select the installation folder of FortressCraft evolved. Or let me search for it with the registry." />
+        <Label Content="" HorizontalAlignment="Left" Margin="381,270,0,0" VerticalAlignment="Top" Height="40"
+               Width="91" MouseEnter="XMouseEnter" MouseLeave="XMouseLeave" />
+        <Button Content="Next" Click="XNext_OnClick" HorizontalAlignment="Left" Margin="392,279,0,0" VerticalAlignment="Top"
+                Width="74" Height="22" common:VisibilityAnimation.AnimationType="Fade" x:Name="xNext" Visibility="Hidden" />
+        <ComboBox x:Name="xDefaultLanguageSelect" SelectionChanged="XDefaultLanguageSelect_OnSelectionChanged" HorizontalAlignment="Left" Margin="35,279,0,0" VerticalAlignment="Top"
+                  Width="120" />
+        <Label Content="Default Language" HorizontalAlignment="Left" Margin="35,253,0,0" VerticalAlignment="Top" Foreground="#FF898989" />
+        <CheckBox x:Name="xGenEnglish" Content="Recreate english" HorizontalAlignment="Left" Margin="181,285,0,0" VerticalAlignment="Top" />
+        <ListBox HorizontalAlignment="Left" Height="100" Margin="72,126,0,0" VerticalAlignment="Top" Width="299" x:Name="xLoggingBox"
+                 ItemsSource="{Binding TLoggingEntries}">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"></ColumnDefinition>
+                            <ColumnDefinition Width="*"></ColumnDefinition>
+                            <ColumnDefinition Width="*"></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+                        <Grid Height="15" Width="100" Grid.Column="0">
+                            <ProgressBar Minimum="{Binding Min}" Maximum="{Binding Max}" Value="{Binding Value}" Height="13" Width="100" Name="pbName"/>
+                            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"  FontSize="8">
+                                <TextBlock.Text>
+                                    <MultiBinding StringFormat="{}{0}/{1}">
+                                        <Binding ElementName="pbName" Path="Value" />
+                                        <Binding ElementName="pbName" Path="Maximum" />
+                                    </MultiBinding>
+                                </TextBlock.Text>
+                            </TextBlock>
+                        </Grid>
+                        <Label Content="{Binding Language, StringFormat={}{0}:}" FontSize="8" Padding="0" Grid.Column="1" FontWeight="Bold" Margin="4,2,4,0"/>
+                        <Label Content="{Binding Message}" FontSize="8" Padding="0"  Grid.Column="2" Margin="0,2,0,0"/>
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
     </Grid>
 </Window>

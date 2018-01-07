@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
 
 namespace fcHelper
 {
@@ -27,18 +29,50 @@ namespace fcHelper
             codeToEnglish.Add("sv", "swedish");
             codeToEnglish.Add("tr", "turkish");
             codeToEnglish.Add("uk", "ukrainian");
+            codeToEnglish.Add("it", "italian");
         }
 
         public static string getLanguageName(string code)
         {
+            if (code == "zh-rCN")
+            {
+                code = "zh-Hans";
+            } else if (code == "zh-rTW")
+            {
+                code = "zh-Hant";
+            }
+
+            code = code.Replace("-r", "-");
+
+            Debug.WriteLine(code);
+
             try
             {
-                return inst.codeToEnglish[code];
+                return CultureInfo.GetCultureInfoByIetfLanguageTag(code).EnglishName;
             }
             catch (Exception)
             {
                 return null;
             }
+
+            //try
+            //{
+            //    Debug.WriteLine("I am here: " + code);
+            //    return inst.codeToEnglish[code];
+            //}
+            //catch (Exception)
+            //{
+            //    Debug.WriteLine("And I am there: " + code);
+            //    try
+            //    {
+            //        return CultureInfo.GetCultureInfoByIetfLanguageTag(code).EnglishName;
+            //    }
+            //    catch (Exception)
+            //    {
+            //        Debug.WriteLine("Oh, I am everywhere: " + code);
+            //        return null;
+            //    }
+            //}
         }
     }
 }

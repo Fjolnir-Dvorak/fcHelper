@@ -163,6 +163,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="LogLanguageEntry.cs" />
     <Compile Include="LanguageHelper.cs" />
     <Compile Include="VisibilityAnimation.cs" />
     <Compile Include="XmlParser.cs" />

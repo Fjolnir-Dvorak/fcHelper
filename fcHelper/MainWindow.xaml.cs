@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -13,6 +14,10 @@ using LibGit2Sharp;
 using Microsoft.Win32;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using MouseEventArgs = System.Windows.Input.MouseEventArgs;
+using System.Globalization;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Windows.Threading;
 
 namespace fcHelper
 {
@@ -25,6 +30,9 @@ namespace fcHelper
         private String gitPath = null;
         private bool closeOnButton = false;
         private const String GITNAME = "Fortress-Craft-Evolved-Translation";
+
+        //public ObservableCollection<LogLanguageEntry> TLoggingEntries = new ObservableCollection<LogLanguageEntry>();
+        public ObservableCollection<LogLanguageEntry> TLoggingEntries = LogLanguageEntry.GenTestCollection();
 
         public MainWindow()
         {
@@ -85,17 +93,8 @@ namespace fcHelper
             // this.xNext.Visibility = Visibility.Hidden;
         }
 
-        private void XNext_OnClick(object sender, RoutedEventArgs e)
+        private void DoAllTheProcessing(bool doEnglish, string defaultLang)
         {
-            if (this.closeOnButton == true)
-            {
-                Application.Current.Shutdown();
-                return;
-            }
-            bool doEnglish = xGenEnglish.IsChecked ?? false;
-            // Get the default language:
-            string def = (string) this.xDefaultLanguageSelect.SelectedItem;
-
             DirectoryInfo languagePath = new DirectoryInfo(Path.Combine(this.gitPath, GITNAME, "res"));
             var templatePath = new DirectoryInfo(Path.Combine(this.gitPath, GITNAME, "templates", "Handbook"));
             DirectoryInfo gameHandbookPath = new DirectoryInfo(Path.Combine(this.installPath, "64", "Default", "Handbook"));
@@ -105,10 +104,12 @@ namespace fcHelper
             ConcurrentDictionary<string, ConcurrentDictionary<string, Template>> templateCollection =
                 XmlParser.ReadAllHandbooks(templatePath);
 
+            var templateCount = templateCollection.Count;
+
             var languageList = languagePath.GetDirectories();
-            string defaultLang = (string) this.xDefaultLanguageSelect.SelectedItem;
             //foreach (var singleLangDir in languageList)
             Parallel.ForEach(languageList, singleLangDir =>
+            //ForEach(languageList, singleLangDir =>
             {
                 var name = singleLangDir.Name;
                 if (name.StartsWith("values-") && name.Length >= 8)
@@ -124,27 +125,84 @@ namespace fcHelper
 
                     bool isDefault = langCode.Equals(defaultLang);
 
+                    var logLangName = (isDefault) ? "testLang" : langName;
+                    LogLanguageEntry logEntry = new LogLanguageEntry(logLangName, 0, templateCount + 1, 0, "parsing handbooks");
+                    updateTLoggingEntries(logEntry);
+
                     //foreach (var singleHandbook in templateCollection)
-                    Parallel.ForEach(templateCollection, singleHandbook =>
+                    //Parallel.ForEach(templateCollection, singleHandbook =>
+                    ForEach(templateCollection, singleHandbook =>
                     {
                         doingHandbookStuff(langName, singleHandbook.Key, singleHandbook.Value, singleLangDir, gameHandbookPath, isDefault);
+                        logEntry.increaseProcess();
                     });
+                    logEntry.Message = "parsing Masterfile";
                     doingMasterfileRepairation(langName, singleLangDir, gameMasterLangPath, masterLangName, isDefault);
-                } else if (name.Equals("values"))
+                    logEntry.increaseProcess();
+                }
+                else if (name.Equals("values"))
                 {
+                    LogLanguageEntry logEntry = new LogLanguageEntry("English", 0, templateCount + 1, 0, "parsing handbooks");
+                    updateTLoggingEntries(logEntry);
+
                     Parallel.ForEach(templateCollection, singleHandbook =>
+                    //ForEach(templateCollection, singleHandbook =>
                     {
                         doingHandbookStuff(null, singleHandbook.Key, singleHandbook.Value, singleLangDir, gameHandbookPath, false);
+                        logEntry.increaseProcess();
                     });
+                    logEntry.Message = "parsing Masterfile";
                     doingMasterfileRepairation(null, singleLangDir, gameMasterLangPath, null, false);
+                    logEntry.increaseProcess();
                 }
                 else
                 {
                     // Invalid directory...
                 }
             });
-            this.closeOnButton = true;
-            this.xNext.Content = "Close";
+            Application.Current.Dispatcher.Invoke(new Action(() =>
+            {
+                this.closeOnButton = true;
+                this.xNext.Content = "Close";
+                this.xNext.IsEnabled = true;
+            }));
+        }
+
+        private void XNext_OnClick(object sender, RoutedEventArgs e)
+        {
+            if (this.closeOnButton == true)
+            {
+                Application.Current.Shutdown();
+                return;
+            }
+
+            bool doEnglish = xGenEnglish.IsChecked ?? false;
+            // Get the default language:
+            string defaultLang = (string)this.xDefaultLanguageSelect.SelectedItem;
+            ThreadPool.QueueUserWorkItem(O => DoAllTheProcessing(doEnglish, defaultLang));
+            this.xNext.IsEnabled = false;
+        }
+
+        private static void ForEach<T>(IEnumerable<T> items, Action<T> action)
+        {
+            foreach (var item in items)
+            {
+                action(item);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.Synchronized)]
+        private void updateTLoggingEntries(LogLanguageEntry log)
+        {
+            Application.Current.Dispatcher.Invoke(new Action(() =>
+            {
+                TLoggingEntries.Add(log);
+                xLoggingBox.ItemsSource = TLoggingEntries;
+                xLoggingBox.SelectedIndex = xLoggingBox.Items.Count - 1;
+                xLoggingBox.ScrollIntoView(xLoggingBox.SelectedItem);
+                xLoggingBox.UpdateLayout();
+            }));
+            //Dispatcher.Invoke(new Action(() => { }), DispatcherPriority.ContextIdle, null);
         }
 
         private static void doingMasterfileRepairation(string langName, DirectoryInfo singleLangDir, DirectoryInfo gameMasterLangPath, string masterLangName, bool isDefault)
