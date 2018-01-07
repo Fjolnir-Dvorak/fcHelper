@@ -383,5 +383,10 @@ namespace fcHelper
         {
             this.validateForNextButton();
         }
+
+        private void XDeleteAppData(object sender, RoutedEventArgs e)
+        {
+            return;
+        }
     }
 }
