@@ -8,29 +8,49 @@
         xmlns:common="clr-namespace:WPF.Common"
         mc:Ignorable="d"
         Title="MainWindow" Height="350" Width="525">
+
     <Grid>
         <extToolkit:WatermarkTextBox IsReadOnly="True" HorizontalAlignment="Left" Height="23" Margin="278,38,0,0" TextWrapping="NoWrap" Watermark="Git: Translation Path" VerticalAlignment="Top"
                                      Width="150" x:Name="xGitPath" />
         <Button Content="Use Default" HorizontalAlignment="Left" Margin="278,70,0,0" VerticalAlignment="Top"
-                Width="75" Click="XUseLocalAppData" ToolTip="Ich bin ein Tooltip" RenderTransformOrigin="0.5,0.5" />
+                Width="75" Click="XUseLocalAppData" ToolTip="Ich bin ein Tooltip" RenderTransformOrigin="0.5,0.5" BorderBrush="{x:Null}" />
         <Button IsEnabled="False" Content="Select Folder" HorizontalAlignment="Left" Margin="358,70,0,0" VerticalAlignment="Top"
-                Width="75" Click="XSelectGitPath" />
+                Width="75" Click="XSelectGitPath" BorderBrush="{x:Null}" >
+        </Button>
         <extToolkit:WatermarkTextBox IsReadOnly="True" HorizontalAlignment="Left" Height="23" Margin="35,38,0,0" TextWrapping="NoWrap" Watermark="Installation path" VerticalAlignment="Top"
                                      Width="150" x:Name="xInstallPath" />
         <Button Content="Autodetect" HorizontalAlignment="Left" Margin="35,70,0,0" VerticalAlignment="Top"
-                Width="75" Click="XAutodetectPath" ToolTip="Utilizes the Windows Registry to receive the installation path from FortressCraft Evolved."/>
+                Width="75" Click="XAutodetectPath" ToolTip="Utilizes the Windows Registry to receive the installation path from FortressCraft Evolved." BorderBrush="{x:Null}"/>
+
+        <Button Content="Delete AppData" HorizontalAlignment="Left" Margin="35,97,0,0" VerticalAlignment="Top"
+                Width="68" Click="XDeleteAppData" ToolTip="Deletes all the data this program created on the PC." FontSize="8" BorderBrush="{x:Null}" >
+            <Button.Background>
+                <LinearGradientBrush EndPoint="0,1" StartPoint="0,0">
+                    <GradientStop Color="#FFF3F3F3" Offset="0.372"/>
+                    <GradientStop Color="#FFEBEBEB" Offset="0.672"/>
+                    <GradientStop Color="#FF6E6E6E" Offset="1"/>
+                    <GradientStop Color="#FF6E6E6E"/>
+                </LinearGradientBrush>
+            </Button.Background>
+        </Button>
         <Button Content="Select Folder" HorizontalAlignment="Left" Margin="115,70,0,0" VerticalAlignment="Top"
-                Width="75" Click="XSelectPath" ToolTip="Please select the installation folder of FortressCraft evolved. Or let me search for it with the registry." />
+                Width="75" Click="XSelectPath" ToolTip="Please select the installation folder of FortressCraft evolved. Or let me search for it with the registry." BorderBrush="{x:Null}" />
         <Label Content="" HorizontalAlignment="Left" Margin="381,270,0,0" VerticalAlignment="Top" Height="40"
                Width="91" MouseEnter="XMouseEnter" MouseLeave="XMouseLeave" />
         <Button Content="Next" Click="XNext_OnClick" HorizontalAlignment="Left" Margin="392,279,0,0" VerticalAlignment="Top"
-                Width="74" Height="22" common:VisibilityAnimation.AnimationType="Fade" x:Name="xNext" Visibility="Hidden" />
+                Width="74" Height="22" common:VisibilityAnimation.AnimationType="Fade" x:Name="xNext" BorderBrush="{x:Null}" Visibility="Hidden" />
         <ComboBox x:Name="xDefaultLanguageSelect" SelectionChanged="XDefaultLanguageSelect_OnSelectionChanged" HorizontalAlignment="Left" Margin="35,279,0,0" VerticalAlignment="Top"
-                  Width="120" />
+                  Width="120" BorderBrush="{x:Null}" />
         <Label Content="Default Language" HorizontalAlignment="Left" Margin="35,253,0,0" VerticalAlignment="Top" Foreground="#FF898989" />
-        <CheckBox x:Name="xGenEnglish" Content="Recreate english" HorizontalAlignment="Left" Margin="181,285,0,0" VerticalAlignment="Top" />
+        <CheckBox x:Name="xGenEnglish" Content="Recreate english" HorizontalAlignment="Left" Margin="181,285,0,0" VerticalAlignment="Top" BorderBrush="{x:Null}" />
         <ListBox HorizontalAlignment="Left" Height="100" Margin="72,126,0,0" VerticalAlignment="Top" Width="299" x:Name="xLoggingBox"
                  ItemsSource="{Binding TLoggingEntries}">
+            <ListBox.BorderBrush>
+                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                    <GradientStop Color="Black" Offset="0"/>
+                    <GradientStop Color="White" Offset="1"/>
+                </LinearGradientBrush>
+            </ListBox.BorderBrush>
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <Grid>

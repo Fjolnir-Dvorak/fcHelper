@@ -136,12 +136,22 @@ namespace fcHelper
                         doingHandbookStuff(langName, singleHandbook.Key, singleHandbook.Value, singleLangDir, gameHandbookPath, isDefault);
                         logEntry.increaseProcess();
                     });
-                    logEntry.Message = "parsing Masterfile";
-                    doingMasterfileRepairation(langName, singleLangDir, gameMasterLangPath, masterLangName, isDefault);
+                    if (doEnglish)
+                    {
+                        logEntry.Message = "parsing Masterfile";
+                        doingMasterfileRepairation(langName, singleLangDir, gameMasterLangPath, masterLangName, isDefault);
+                    } else
+                    {
+                        logEntry.Message = "skipped Masterfile";
+                    }
                     logEntry.increaseProcess();
                 }
                 else if (name.Equals("values"))
                 {
+                    if (!doEnglish)
+                    {
+                        return;
+                    }
                     LogLanguageEntry logEntry = new LogLanguageEntry("English", 0, templateCount + 1, 0, "parsing handbooks");
                     updateTLoggingEntries(logEntry);
 
@@ -202,7 +212,6 @@ namespace fcHelper
                 xLoggingBox.ScrollIntoView(xLoggingBox.SelectedItem);
                 xLoggingBox.UpdateLayout();
             }));
-            //Dispatcher.Invoke(new Action(() => { }), DispatcherPriority.ContextIdle, null);
         }
 
         private static void doingMasterfileRepairation(string langName, DirectoryInfo singleLangDir, DirectoryInfo gameMasterLangPath, string masterLangName, bool isDefault)
@@ -386,7 +395,55 @@ namespace fcHelper
 
         private void XDeleteAppData(object sender, RoutedEventArgs e)
         {
+            var pathParent = Path.Combine(Environment.GetFolderPath(System.Environment.SpecialFolder.LocalApplicationData),
+                "FjolnirDvorak");
+            var path = Path.Combine(pathParent, "fcHelper");
+            LogLanguageEntry logEntry = new LogLanguageEntry("Config", 0, 1, 0, "deleting config directory");
+            updateTLoggingEntries(logEntry);
+            DeleteDirectory(path, true);
+            DeleteDirectory(pathParent, false);
+            logEntry.increaseProcess();
+            //Directory.Delete(path, true);
+            //Directory.Delete(pathParent, false);
             return;
+        }
+
+        public void DeleteDirectory(string path, bool recursive)
+        {
+            var currentDir = new DirectoryInfo(path);
+            if (!currentDir.Exists)
+            {
+                return;
+            }
+            if (recursive)
+            {
+                var subfolders = Directory.GetDirectories(path);
+                foreach (var s in subfolders)
+                {
+                    DeleteDirectory(s, recursive);
+                }
+            }
+            var files = Directory.GetFiles(path);
+            foreach (var f in files)
+            {
+                try
+                {
+                    var attr = File.GetAttributes(f);
+                    if ((attr & FileAttributes.ReadOnly) == FileAttributes.ReadOnly)
+                    {
+                        File.SetAttributes(f, attr ^ FileAttributes.ReadOnly);
+                    }
+                    File.Delete(f);
+                }
+                catch (IOException)
+                {
+                    //IOErrorOnDelete = true;
+                }
+            }
+
+            // At this point, all the files and sub-folders have been deleted.
+            // So we delete the empty folder using the OOTB Directory.Delete method.
+            Directory.Delete(path);
         }
     }
 }
